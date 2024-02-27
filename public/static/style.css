@@ -1,0 +1,54 @@
+body {
+    padding: 0px;
+    margin: 0px;
+    background-color: white;
+    color: black;
+    font-weight: 300;
+    font-size: 18pt;
+}
+
+
+/* text styling */
+
+strong {
+    font-weight: 600;
+}
+
+label {
+    font-weight: 300;
+}
+
+.warm {
+    color: steelblue;
+    text-align: justify;
+}
+
+.cool {
+    color: #ccccff;
+}
+
+h1 {
+    margin-top: 0px;
+}
+
+
+/* these are all the same for now, but easy to modify individually */
+
+#container-ad,
+#container-error,
+#container-consent,
+#container-instructions1,
+#container-instructions2,
+#container-instructions3,
+#container-questionnaire,
+#container-info {
+    background: white;
+    margin: 20px;
+}
+
+#container-exp {
+    background: black;
+    margin: 20px;
+}
+
+/* */
