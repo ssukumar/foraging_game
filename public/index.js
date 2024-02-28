@@ -42,9 +42,11 @@ var svgNS = "http://www.w3.org/2000/svg";
 const svgCanvas = document.getElementById("basket_svg");
 const shapeElement = document.getElementById("basket");
 
+
 function createTree(){
 // thanks ChatGPT
    // Define the angles for each circle
+	treeDiv = document.getElementById("Tree");
     var angles = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
 
     // Create SVG circle elements
@@ -54,7 +56,7 @@ function createTree(){
 	trunk.setAttribute('width', 10);
 	trunk.setAttribute('height', 30);
 	trunk.setAttribute('fill', "brown");
-	svgCanvas.appendChild(trunk);
+	treeDiv.appendChild(trunk);
 	
 	var centerX = 75;
 	var centerY = 0;
@@ -69,60 +71,75 @@ function createTree(){
       circle.setAttribute("r", radius);
       circle.setAttribute("fill", "green");
 
-      svgCanvas.appendChild(circle);
+      treeDiv.appendChild(circle);
   });
 }
 
 function createApples(){
+	appleDiv = document.getElementById("Apples");
 	
-	var angles = [0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, 
-		(7 * Math.PI) / 4, 0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, (7 * Math.PI) / 4];
-	var centerX = 75;
-	var centerY = 0;
-	var branch_dist = 7.5;
-	var radius = 1.5;
-    angles.forEach(function(angle) {
+		if (!appleDiv.firstChild){
+		console.log("Creating Apples")
+	
+		var angles = [0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, 
+			(7 * Math.PI) / 4, 0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, (7 * Math.PI) / 4];
+		var centerX = 75;
+		var centerY = 0;
+		var branch_dist = 7.5;
+		var radius = 1.5;
+
+	    angles.forEach(function(angle) {
 	  
-		rand_X_add = Math.random() * 6- 3;
-		rand_Y_add = Math.random() * 6 - 3;
-      	var x = centerX + branch_dist * Math.cos(angle) + rand_X_add;
-      	var y = centerY + branch_dist * Math.sin(angle) + rand_Y_add;
+			rand_X_add = Math.random() * 6- 3;
+			rand_Y_add = Math.random() * 6 - 3;
+	      	var x = centerX + branch_dist * Math.cos(angle) + rand_X_add;
+	      	var y = centerY + branch_dist * Math.sin(angle) + rand_Y_add;
 
-      	var circle = document.createElementNS(svgNS, "circle");
-      	circle.setAttribute("cx", x);
-     	circle.setAttribute("cy", y);
-     	circle.setAttribute("r", radius);
-     	circle.setAttribute("fill", "red");
+	      	var circle = document.createElementNS(svgNS, "circle");
+	      	circle.setAttribute("cx", x);
+	     	circle.setAttribute("cy", y);
+	     	circle.setAttribute("r", radius);
+	     	circle.setAttribute("fill", "red");
 
-      	svgCanvas.appendChild(circle);
-	});
+	      	appleDiv.appendChild(circle);
+		});
 	
-	for (let i = 0; i< 2; i++){
-		rand_X_add = Math.random() * 4- 2;
-		rand_Y_add = Math.random() * 4 -2;
-		var x = centerX +rand_X_add;
-		var y = centerY + rand_Y_add;
+		for (let i = 0; i< 2; i++){
+			rand_X_add = Math.random() * 4- 2;
+			rand_Y_add = Math.random() * 4 -2;
+			var x = centerX +rand_X_add;
+			var y = centerY + rand_Y_add;
 
-		var circle = document.createElementNS(svgNS, "circle");
-		circle.setAttribute("cx", x);
-		circle.setAttribute("cy", y);
-		circle.setAttribute("r", radius);
-		circle.setAttribute("fill", "red");
-		svgCanvas.appendChild(circle);
+			var circle = document.createElementNS(svgNS, "circle");
+			circle.setAttribute("cx", x);
+			circle.setAttribute("cy", y);
+			circle.setAttribute("r", radius);
+			circle.setAttribute("fill", "red");
+			appleDiv.appendChild(circle);
+		}
 	}
 }
 
+function removeApples(){
+	var appleContainer = document.getElementById("Apples");
+	while (appleContainer.firstChild){
+		appleContainer.removeChild(appleContainer.firstChild);
+	}
+}
+
+
 function monitorBasket(dur){
 	setTimeout(function(){
-			shapeElement.setAttribute("fill","green");
+			// shapeElement.setAttribute("fill","green");
+			createApples();
 			document.addEventListener("keypress", function(event){
 		    if (event.keyCode == 32){
-		   		shapeElement.setAttribute("fill","black");
+		   		// shapeElement.setAttribute("fill","black");
+				removeApples();
 				dur += delay_add;
 				monitorBasket(dur);
 				console.log("Inside event listener");
 				console.log("delay = " + dur);
-				clearInterval(keepChecking4Space);
 			}
 		});
 		
@@ -130,7 +147,6 @@ function monitorBasket(dur){
 }
 
 createTree();
-createApples();
 monitorBasket(init_dur);
 
 
