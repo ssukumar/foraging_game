@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "foraging-timing"
-  }
+  },
+  "targets": {},
+  "etags": {
+    "foraging-game-6b695": {
+      "extensionInstances": {}
+    }
+  },
+  "dataconnectEmulatorConfig": {}
 }
