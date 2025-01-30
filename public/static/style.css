@@ -43,6 +43,10 @@ body {
   padding: 0;
 }
 
+img{
+	width: 50%;
+	height: 50%;
+}
 #basket_svg {
   width: 100vw;
   height: 100vh;
@@ -120,6 +124,17 @@ body {
   left: 5%;
 }
 
+
+.calibration_score {
+  font-size: 100px;
+/*  position:relative;*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
 .timer_div {
   font-size: 50px;
   text-align: center;
@@ -128,6 +143,16 @@ body {
   right: 5%;
   bottom: 5%;
   color: red;
+}
+
+.timer_calibration_div{
+    font-size: 50px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+	color:red;
 }
 
 .key_instructions {
@@ -145,8 +170,8 @@ body {
 	top:40%;
 	text-align:center;
 	bottom:40%;
-	right:20%;
-	left:20%;
+	right:15%;
+	left:15%;
 	background-color:white;
 	position:absolute;
 }
@@ -196,7 +221,7 @@ body {
 }
 
 #reset-instruction {
-  position: absolute;
+  position: absolute; 
   top: 20%;
   right: 15%;
   font-size: 20px;

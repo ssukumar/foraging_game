@@ -20,7 +20,7 @@
 
 // Set to 'true' if you wish to only test the front-end (will not access databases)
 // **TODO** Make sure this is set to false before deploying!
-const noSave = false;
+const noSave = true;
 var elem;
 
 /* TEMPORARY USE OF ORIGINAL CODE TO TEST THINGS OUT */
@@ -33,8 +33,8 @@ try {
 // Setting up firebase variables
 const firestore = firebase.firestore(); // (a.k.a.) db
 const firebasestorage = firebase.storage();
-const subjectcollection = firestore.collection("testSubjects");
-const trialcollection = firestore.collection("testTrials");
+const subjectcollection = firestore.collection("prolificLongFirstSubjects");
+const trialcollection = firestore.collection("prolificLongFirstTrials");
 
 
 // Function to switch between HTML pages
@@ -104,6 +104,7 @@ var subject = {
 // Object used to track reaching data (updated every reach and uploaded to database)
 var subjTrials = {
     id: null, //replace with participant ID
+	timeStamp:[], //
     travelTime: [], //replace with block type
 	block: [], // block number 
 	requiredPresses:[],
@@ -175,10 +176,9 @@ function checkInfo() {
 	}
 	
     if (noSave) {
-        show('blinking', prevScreen);
-        // startGame();
-		// runTrialLogic();
-		
+        // show('blinking', prevScreen);
+		// show('calibration', prevScreen);
+		// monitorCalibration(prevScreen);
 		beginBlock(block, shortFirst);
         return;
     }
@@ -189,11 +189,13 @@ function checkInfo() {
         alert("Please fill out your basic information!");
         return;
     } else {
-        show('blinking', prevScreen);
-        createSubject(subjectcollection, subject);
-        // startGame();
-		// runTrialLogic();
+		// show('blinking', prevScreen);
+		createSubject(subjectcollection, subject);
+		
 		beginBlock(block, shortFirst);
+		
+		// show('calibration', prevScreen);
+		// monitorCalibration(prevScreen);
     }
 	
 	checkWinFocus();
@@ -235,16 +237,22 @@ function recordTrialSubj(collection, subjTrials) {
 var svgContainer;
 var screen_height;
 var screen_width;
+
+// TO DO: Add to the target json file 
+var calibration_score = 0;
+var calib_first_score = 0; // first score 
+var calibration_block = 0;
 var long_travel = 10;
 var short_travel = 5;
 var travelTime;
 var num_trials = 2000;
 var trialCount = 0; // tree or trial counter within a block 
 var block = 0; // block counter 
-var shortFirst = true; // if true,then the short travel time block is rendered first 
+var shortFirst = false; // if true,then the short travel time block is rendered first 
 var score = 0; 
 var drawn = false; // flag to check if fallen apples are drawn 
 var clockUpdateInterval;
+var totalCalibrationSeconds = 40; // Number of seconds in calibration phase 
 var totalTimeMins = 15; // Duration of experiment in minutes
 var timeRemaining;
 var requiredPresses = 1; // Number of space bar presses required to harvest
@@ -256,6 +264,7 @@ var maxDefocusLim = 3; // maximum number of times a window can be defocussed bef
 var defocusCount = 0;
 var inactiveLimSeconds = 45;
 var inactiveTimeout;
+var enterSpaceDown;
 var warningLimSeconds = 25;
 var warningTimeout;
 var bwBlocksLimSeconds = 300;
@@ -267,6 +276,7 @@ const shapeElement = document.getElementById("basket");
 var gameStartTime = new Date();
 //gameState variables
 var gameState = 'GAMESTART';
+var CALIBRATION = 'CALIBRATION';
 var NEWTREE = 'NEWTREE';
 var SHOWAPPLES = 'SHOWAPPLES';
 var IDLE = 'IDLE';
@@ -315,11 +325,73 @@ function checkInactive(){
 	}, inactiveLimSeconds * 1000)
 }
 
+function monitorCalibration(curr_html_page){
+	
+	gameState = CALIBRATION;
+	calibration_block += 1; 
+	calibration_score = 0;
+	
+	show('calibration', curr_html_page);
+	
+	//setup 40 second timer 
+	var countDownDate = new Date();
+	
+	countDownDate.setSeconds(countDownDate.getSeconds() + totalCalibrationSeconds);
+	
+	// Update the count down every 1 second
+	clockUpdateInterval = setInterval(function() {
+
+	  // Get today's date and time
+	  var now = new Date().getTime();
+
+	  // Find the distance between now and the count down date
+	  timeRemaining =    countDownDate.getTime() - now;
+
+	  // Time calculations for days, hours, minutes and seconds
+	  var minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+	  var seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+	  // Display the result in the element with id="demo"
+	  document.getElementById("timer").innerText = minutes + "m :" + seconds + "s ";
+	  console.log("Time Remaining = " + timeRemaining)
+	  // If the count down is finished, write some text 
+	  if (timeRemaining < 0) {
+	
+		console.log("TIME'S UP!! ENDING THE GAME")
+		document.removeEventListener("keydown", handleKeyDownEvents);
+		document.removeEventListener("keyup", handleKeyEvents);
+	    clearInterval(clockUpdateInterval);
+		
+		if (calibration_block == 1){
+			// show('calib_bw_block', 'calibration')
+			transitionCalibration()
+		} else {
+			// Moving on to the beginning of the block
+	        show('blinking', 'calibration');
+			beginBlock(block, shortFirst);
+		}
+	  }
+
+	}, 1000);
+	
+	// Listen to the keypress 
+	document.addEventListener("keydown", handleKeyDownEvents);
+	document.addEventListener("keyup", handleKeyEvents)
+	
+}
+
+function transitionCalibration(){
+	// clearInterval(clockUpdateInterval);
+	console.log("Entering the Transition Calibration Functions!!!! ")
+	calibration_score = 0
+	document.getElementById("num_keypresses").innerText = calibration_score;
+	show('calib_bw_block', 'calibration')
+	monitorCalibration('calib_bw_block');
+}
+
+
 function createApples(){
-    gameState = SHOWAPPLES;
-    setTimeout(function(){
-        gameState = IDLE;
-    },500);
+
 	appleDiv = document.getElementById("Apples");
 	
 		if (!appleDiv.firstChild){
@@ -450,8 +522,8 @@ function showAdditionalScoreText(additionalScore) {
     // Hide the additional score text after 2 seconds
     setTimeout(() => {
         additionalScoreElement.style.display = 'none';
-    }, 2000);
-	}
+    }, 5000);
+}
 
 // Function to increment the required presses after each successful harvest
 function incrementRequiredPresses() {
@@ -478,22 +550,24 @@ function selectPatchType(){
 // Function to reset the trial
 function resetTrial(travelTime) {
 	
-    // score = 0;
     currentPresses = 0;
 	keyPressIncrements = selectPatchType();
 	console.log("Key Press Increment = "+ keyPressIncrements)
 	console.log("")
+	trialCount++;
     gameState = NEWTREE;
+	console.log("gamestate = "+ gameState)
     removeApples();
     clearFallenApples();
     show('next', 'blinking');
 	updateScoreDisplay();
+	document.removeEventListener("keydown", handleKeyDownEvents);
+	document.removeEventListener("keyup", handleKeyEvents);
     resetTrialTimeout = setTimeout(function() {
-        show('blinking', 'next');
-        if (trialCount < num_trials) {
-			requiredPresses = 1;
-            resetTree();
-        }
+	    show('blinking', 'next');
+			// requiredPresses = 1;
+	        resetTree();
+    
     }, travelTime * 1000);
 
 
@@ -512,7 +586,6 @@ function chooseTravelTime() {
 }
 
 // function to begin a block 
-
 function beginBlock() {
 	openFullScreen();
 	checkInactive();
@@ -549,6 +622,7 @@ function runTrialLogic() {
     return false;
 }
 
+      
 function runTimer(){
 	
 	var countDownDate = new Date();
@@ -570,10 +644,10 @@ function runTimer(){
 
 	  // Display the result in the element with id="demo"
 	  document.getElementById("timer").innerText = minutes + "m :" + seconds + "s ";
-	  
-	  console.log("Time Remaining")
-	  console.log(timeRemaining)
-	  
+	  //
+	  // console.log("Time Remaining")
+	  // console.log(timeRemaining)
+	  //
 	  // If the count down is finished, write some text 
 	  if (timeRemaining < 0) {
 	
@@ -602,6 +676,18 @@ function resetTree(){
 	createTree();
     currentPresses = 0; // Reset current presses
 	createApples();
+	console.log("Resetting Tree")
+	console.log("gameState = "+ gameState)
+	if (gameState == NEWTREE){
+
+		requiredPresses = 1;
+		console.log("reset tree after travel")
+		console.log("requiredPressed = "+ requiredPresses)
+	} else {
+		incrementRequiredPresses(); // Increase required presses for next harvest
+		console.log("reset tree after harvest")
+		console.log("requiredPressed = "+ requiredPresses)
+	}
 	
 	document.addEventListener("keydown", handleKeyDownEvents);
 	document.addEventListener("keyup", handleKeyEvents)
@@ -633,32 +719,28 @@ function handleKeyEvents(event) {
 
 // Function to handle Enter key press
 function handleEnterKey(event) {
-    if (event.key === "Enter" && enterKeyDown == true) {
-		gameState = LEAVE;
-		enterKeyDown= true;
-		subjTrials.tree.push(trialCount)
-		subjTrials.action.push(gameState);
-		subjTrials.timeRemaining.push(timeRemaining);
-		subjTrials.travelTime.push(travelTime);
-		subjTrials.block.push(block);
-		subjTrials.requiredPresses.push(requiredPresses);
-		subjTrials.currentPresses.push(currentPresses);
-		subjTrials.score.push(score);
-		subjTrials.keyIncRate.push(keyPressIncrements);
+	if (gameState != CALIBRATION){
+	    if (event.key === "Enter" && enterKeyDown == true) {
+			gameState = LEAVE;
+			enterKeyDown= true;
+			currTimeStamp = new Date().getTime()
 		
-		// travelTime = chooseTravelTime()
-        resetTrial(travelTime); // Start a new trial
-        trialCount++;
+			subjTrials.timeStamp.push(currTimeStamp);
+			subjTrials.tree.push(trialCount)
+			subjTrials.action.push(gameState);
+			subjTrials.timeRemaining.push(timeRemaining);
+			subjTrials.travelTime.push(travelTime);
+			subjTrials.block.push(block);
+			subjTrials.requiredPresses.push(requiredPresses);
+			subjTrials.currentPresses.push(currentPresses);
+			subjTrials.score.push(score);
+			subjTrials.keyIncRate.push(keyPressIncrements);
 		
-		// if (trialCount==num_trials){
-		// 	document.removeEventListener("keydown", handleKeyDownEvents);
-		// 	document.removeEventListener("keyup", handleKeyEvents);
-		// 	clearInterval(clockUpdateInterval);
-		// 	gameState=END;
-		// 	endGame()
-		// }
-
-    }
+			// travelTime = chooseTravelTime()
+	        resetTrial(travelTime); // Start a new trial
+	        // trialCount++;
+	    }
+	} // no else : no-op during 
 }
 
 // Function to handle spacebar press
@@ -666,57 +748,67 @@ function handleSpacebarPress(event) {
 	if (enterSpaceDown == true){
 		enterSpaceDown = false;
 	    if (event.key === " ") {
-	        currentPresses++;
-	        if (checkPresses()) {
-	            gameState = HARVEST;
-				subjTrials.tree.push(trialCount)
-				subjTrials.action.push(gameState);
-				subjTrials.timeRemaining.push(timeRemaining);
-				subjTrials.travelTime.push(travelTime);
-				subjTrials.block.push(block);
-				subjTrials.requiredPresses.push(requiredPresses);
-				subjTrials.currentPresses.push(currentPresses);
-				subjTrials.score.push(score);
-				subjTrials.keyIncRate.push(keyPressIncrements);
-	            
-				// Harvest the apple
-            
-				updateProgressBar();
-	            removeApples();   
-            			
-				document.removeEventListener("keydown", handleKeyDownEvents);
-				document.removeEventListener("keyup", handleKeyEvents);
-	            // Draw a random number of fallen apples (5 to 10)
+	        
 			
-	            const numApples = Math.floor(Math.random() * 6) + 5;
-	            if (drawn==false){
-		            additionalScore = Math.floor(Math.random() * 3) + 9;
-					showAdditionalScoreText(additionalScore);
-		            score += additionalScore;
-					updateScoreDisplay();
-					drawFallenApples(numApples);
-					drawn = true;
-				} 
-	            setTimeout(function(){
-					incrementRequiredPresses(); // Increase required presses for next harvest
-					resetTree()
-				}, 1000);
-	        } else {
-	            gameState = PRESS;
-				subjTrials.tree.push(trialCount)
-				subjTrials.action.push(gameState);
-				subjTrials.timeRemaining.push(timeRemaining);
-				subjTrials.travelTime.push(travelTime);
-				subjTrials.block.push(block);
-				subjTrials.requiredPresses.push(requiredPresses);
-				subjTrials.currentPresses.push(currentPresses);
-				subjTrials.score.push(score);
-				subjTrials.keyIncRate.push(keyPressIncrements); 
-	            setTimeout(()=>{
-	                gameState = IDLE;
-	            },500)
-	            updateProgressBar();
-	        }
+			if (gameState != CALIBRATION){
+				currentPresses++;
+		        if (checkPresses()) {
+		            gameState = HARVEST;
+					currTimeStamp = new Date().getTime()
+		
+					subjTrials.timeStamp.push(currTimeStamp);
+					subjTrials.tree.push(trialCount)
+					subjTrials.action.push(gameState);
+					subjTrials.timeRemaining.push(timeRemaining);
+					subjTrials.travelTime.push(travelTime);
+					subjTrials.block.push(block);
+					subjTrials.requiredPresses.push(requiredPresses);
+					subjTrials.currentPresses.push(currentPresses);
+					subjTrials.score.push(score);
+					subjTrials.keyIncRate.push(keyPressIncrements);
+	            
+					// Harvest the apple
+            
+					updateProgressBar();
+		            removeApples();   
+            			
+					document.removeEventListener("keydown", handleKeyDownEvents);
+					document.removeEventListener("keyup", handleKeyEvents);
+		            // Draw a random number of fallen apples (5 to 10)
+			
+		            const numApples = Math.floor(Math.random() * 6) + 5;
+		            if (drawn==false){
+			            additionalScore = Math.floor(Math.random() * 3) + 9;
+						showAdditionalScoreText(additionalScore);
+			            score += additionalScore;
+						updateScoreDisplay();
+						drawFallenApples(numApples);
+						drawn = true;
+					} 
+		            setTimeout(function(){
+						// incrementRequiredPresses(); // Increase required presses for next harvest
+						resetTree()
+					}, 1000);
+		        } else {
+		            gameState = PRESS;
+					currTimeStamp = new Date().getTime()
+		
+					subjTrials.timeStamp.push(currTimeStamp);
+					subjTrials.tree.push(trialCount)
+					subjTrials.action.push(gameState);
+					subjTrials.timeRemaining.push(timeRemaining);
+					subjTrials.travelTime.push(travelTime);
+					subjTrials.block.push(block);
+					subjTrials.requiredPresses.push(requiredPresses);
+					subjTrials.currentPresses.push(currentPresses);
+					subjTrials.score.push(score);
+					subjTrials.keyIncRate.push(keyPressIncrements); 
+		            updateProgressBar();
+		        }
+			} else{
+				calibration_score += 1;
+				document.getElementById("scoreValue").innerText = calibration_score;
+			}
 	}
 }}
 
@@ -780,6 +872,7 @@ function helpEndBlock(){
 // Function that allows for the premature end of a game
 function badGame() {
     helpEnd();
+	gamestate = 'ABORT'
 	clearInterval(clockUpdateInterval);
     show('container-failed', 'blinking');
 }
@@ -792,7 +885,7 @@ function endBlock() {
 	clearTimeout(warningTimeout);
 	clearTimeout(inactiveTimeout);
 	bwBlocksTimeout = setTimeout(function(){
-		badGame();
+		checkInfo();
 	}, bwBlocksLimSeconds*1000)
 	document.getElementById('next').style.display = 'none';
 	document.getElementById("num_apples").innerText = score;

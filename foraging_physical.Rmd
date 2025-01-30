@@ -1,0 +1,563 @@
+---
+title: "Foraging_analysis_physical"
+author: "Shruthi Sukumar"
+date: "2024-07-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lme4)
+library(lmerTest)
+library(sjPlot)
+library(emmeans)
+```
+
+## Data import
+
+```{r}
+har_dur_df = read.csv('har_dur_shortfirst.csv', header = TRUE)
+har_dur_df$env = as.factor(har_dur_df$env)
+levels(har_dur_df$env)[1] = "short_travel"
+levels(har_dur_df$env)[2] = "long_travel"
+
+
+har_dur_df = har_dur_df %>% mutate(shortFirst = TRUE)
+
+
+har_dur_df_lf = read.csv('har_dur_longfirst.csv', header = TRUE)
+har_dur_df_lf$env = as.factor(har_dur_df_lf$env)
+levels(har_dur_df_lf$env)[1] = "long_travel"
+levels(har_dur_df_lf$env)[2] = "short_travel"
+har_dur_df_lf = har_dur_df_lf %>% mutate(shortFirst = FALSE)
+
+har_dur_df = rbind(har_dur_df, har_dur_df_lf)
+
+#Exclude subject 65de3fafab17ebda9cb762aa . They only stayed in the same tree in each environment. 
+har_dur_df = har_dur_df[har_dur_df$subject != '65de3fafab17ebda9cb762aa',] 
+
+har_dur_df = har_dur_df %>% group_by(subject) %>% mutate(avg_harvest_rate = score_tree/(harvest_dur/1000))
+
+
+st.err = function(x){
+  return(sd(x, na.rm=TRUE)/sqrt(length(x)) )
+}
+
+```
+
+## Analysis
+
+1. Number of harvests as a function of time, separated by environment type
+
+
+```{r}
+har_dur_df_sf = har_dur_df[har_dur_df$shortFirst == TRUE,]
+har_dur_df_lf = har_dur_df[har_dur_df$shortFirst == FALSE,]
+
+ggplot(data= har_dur_df_sf) + geom_line(aes(x = tree, y = num_harvests, color = env))+
+  facet_wrap(~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("# of Harvests")+
+  ggtitle("Short Travel First")+
+  theme_classic()
+
+ggplot(data= har_dur_df_lf) + geom_line(aes(x = tree, y = num_harvests, color = env))+
+  facet_wrap(~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("# of Harvests")+
+  ggtitle("Long Travel First")+
+  theme_classic()
+
+```
+Difficulty at exit 
+```{r}
+har_dur_df_sf = har_dur_df[har_dur_df$shortFirst == TRUE,]
+
+ggplot(data= har_dur_df_sf) + geom_line(aes(x = tree, y = difficulty_at_exit, color = env))+
+  facet_wrap(~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("Difficulty at exit")+
+  ggtitle("Short Travel First")+
+  theme_classic()
+
+ggplot(data= har_dur_df_lf) + geom_line(aes(x = tree, y = difficulty_at_exit, color = env))+
+  facet_wrap(~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("Difficulty at exit")+
+  ggtitle("Long Travel First")+
+  theme_classic()
+
+```
+
+Num harvest by patch type 
+
+```{r}
+ggplot(data= har_dur_df_sf) + geom_point(aes(x = tree_type, y = num_harvests, color = env))+
+  facet_wrap(shortFirst~subject,scales = "free")+
+  xlab("Tree Type") + ylab("# of Harvests")+
+  ggtitle("Short Travel First")+
+  theme_classic()
+
+ggplot(data= har_dur_df_lf) + geom_point(aes(x = tree_type, y = num_harvests, color = env))+
+  facet_wrap(shortFirst~subject,scales = "free")+
+  xlab("Tree Type") + ylab("# of Harvests")+
+  ggtitle("Long Travel First")+
+  theme_classic()
+```
+
+3. Aggregate data to look at behavior between patches
+
+```{r}
+har_dur_agg = har_dur_df %>% group_by(env, tree_type, shortFirst) %>% summarise(mean_num_harvests = mean(num_harvests), sd_num_harvests = sd(num_harvests), mean_harvest_dur = mean(harvest_dur), sd_harvest_dur = sd(harvest_dur), mean_difficulty_exit = mean(difficulty_at_exit), sd_difficulty_exit = sd(difficulty_at_exit)) 
+
+har_dur_agg = har_dur_agg %>% mutate(num_harvests_min = mean_num_harvests - sd_num_harvests, num_harvests_max = mean_num_harvests + sd_num_harvests, harvest_dur_min = mean_harvest_dur - sd_harvest_dur, harvest_dur_max = mean_harvest_dur + sd_harvest_dur, difficulty_exit_min = mean_difficulty_exit - sd_difficulty_exit, difficulty_exit_max = mean_difficulty_exit + sd_difficulty_exit)
+
+
+har_dur_agg_sf = har_dur_agg[har_dur_agg$shortFirst==TRUE,]
+ggplot(data=har_dur_agg_sf) + geom_line(aes(x = tree_type, y = mean_num_harvests, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = num_harvests_min, ymax = num_harvests_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Number of Harvests")+
+    ggtitle("Short Travel First")+
+  theme_classic()
+
+har_dur_agg_lf = har_dur_agg[har_dur_agg$shortFirst==FALSE,]
+ggplot(data=har_dur_agg_lf) + geom_line(aes(x = tree_type, y = mean_num_harvests, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = num_harvests_min, ymax = num_harvests_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Number of Harvests")+
+    ggtitle("Long Travel First")+
+  theme_classic()
+
+```
+4. Harvest Duration as a function of time, separated by environment type
+
+```{r}
+ggplot(data= har_dur_df_sf) + geom_line(aes(x = tree, y = harvest_dur, color = env))+
+  facet_wrap(shortFirst~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("Harvest Duration (ms)")+
+  ggtitle("Short Travel First")+
+  theme_classic()
+
+ggplot(data= har_dur_df_lf) + geom_line(aes(x = tree, y = harvest_dur, color = env))+
+  facet_wrap(shortFirst~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("Harvest Duration (ms)")+
+  ggtitle("Long Travel First")+
+  theme_classic()
+```
+5. Harvest Duration aggregate data 
+
+```{r}
+ggplot(data=har_dur_agg_sf) + geom_line(aes(x = tree_type, y = mean_harvest_dur, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = harvest_dur_min, ymax = harvest_dur_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Harvest Duration")+
+    ggtitle("Short Travel First")+theme_classic()
+
+
+ggplot(data=har_dur_agg_lf) + geom_line(aes(x = tree_type, y = mean_harvest_dur, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = harvest_dur_min, ymax = harvest_dur_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Harvest Duration")+
+    ggtitle("Long Travel First")+theme_classic()
+```
+
+## normalize metrics by subject 
+
+```{r}
+har_dur_df = har_dur_df %>% group_by(subject) %>% mutate(norm_harvest_dur = harvest_dur / mean(harvest_dur, na.rm=TRUE), norm_num_harvests = num_harvests/mean(num_harvests, na.rm=TRUE))
+
+har_dur_agg_norm = har_dur_df %>% group_by(env, tree_type, shortFirst) %>% summarise(mean_norm_num_harvests = mean(norm_num_harvests), sd_norm_num_harvests = sd(norm_num_harvests), mean_norm_harvest_dur = mean(norm_harvest_dur), sd_norm_harvest_dur= sd(norm_harvest_dur)) 
+
+har_dur_agg_norm = har_dur_agg_norm %>% mutate(norm_harvest_dur_min = mean_norm_harvest_dur - sd_norm_harvest_dur, norm_harvest_dur_max = mean_norm_harvest_dur + sd_norm_harvest_dur, norm_num_harvests_min = mean_norm_harvest_dur - sd_norm_harvest_dur, norm_num_harvests_max = mean_norm_harvest_dur + sd_norm_harvest_dur)
+
+har_dur_agg_norm_sf =har_dur_agg_norm[har_dur_agg_norm$shortFirst == TRUE,]
+
+plt_har_dur_sf <- ggplot(data=har_dur_agg_norm_sf) + geom_line(aes(x = tree_type, y = mean_norm_harvest_dur, color = env, group = env), position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_harvest_dur_min, ymax = norm_harvest_dur_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized Harvest Duration")+
+    ggtitle("Short Travel First")+
+  theme_classic()+
+  theme(legend.position="none")
+
+ggsave("plt_har_dur_sf.pdf", plt_har_dur_sf, width = 5, height = 4)
+ggsave("plt_har_dur_sf.png", plt_har_dur_sf, width = 5, height = 4)
+
+
+plt_num_har_sf <- ggplot(data=har_dur_agg_norm_sf) + geom_line(aes(x = tree_type, y = mean_norm_num_harvests, color = env, group = env), position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_num_harvests_min, ymax = norm_num_harvests_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized # of Harvests")+
+    ggtitle("Short Travel First")+
+  theme_classic()+
+  theme(legend.position="none")
+
+ggsave("plt_num_har_sf.pdf", plt_num_har_sf, width = 5, height = 4)
+ggsave("plt_num_har_sf.png", plt_num_har_sf, width = 5, height = 4)
+
+har_dur_agg_norm_lf =har_dur_agg_norm[har_dur_agg_norm$shortFirst == FALSE,]
+
+plt_har_dur_lf <-  ggplot(data=har_dur_agg_norm_lf) + geom_line(aes(x = tree_type, y = mean_norm_harvest_dur, color = env, group = env), position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_harvest_dur_min, ymax = norm_harvest_dur_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized Harvest Duration")+
+    ggtitle("Long Travel First")+
+  theme_classic()+
+  theme(legend.position="none")
+ggsave("plt_har_dur_lf.pdf", plt_har_dur_lf, width = 5, height = 4)
+ggsave("plt_har_dur_lf.png", plt_har_dur_lf, width = 5, height = 4)
+
+plt_num_har_lf <- ggplot(data=har_dur_agg_norm_lf) + geom_line(aes(x = tree_type, y = mean_norm_num_harvests, color = env, group = env), position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_num_harvests_min, ymax = norm_num_harvests_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized # of Harvests")+
+    ggtitle("Long Travel First")+
+  theme_classic()+
+  theme(legend.position="none")
+ggsave("plt_num_har_lf.pdf", plt_num_har_lf, width = 5, height = 4)
+ggsave("plt_num_har_lf.png", plt_num_har_lf, width = 5, height = 4)
+```
+```{r}
+# interpret dur_per_harvest elements as arrays 
+
+# from chatgpt  -- it works!! 
+
+# Original string
+str <- "[1 ,2 , 3]"
+# Remove the square brackets and spaces around commas
+
+string_interpret <- function(str){
+  clean_str <- gsub("\\[|\\]|\\s*(,\\s*)", "\\1", str)
+  
+  # Split the string by commas
+  split_str <- unlist(strsplit(clean_str, ","))
+  
+  # Convert the resulting character vector to a numeric vector
+  numeric_array <- as.numeric(split_str)
+  return(numeric_array)
+}
+# Print the resulting numeric array
+# print(string_interpret(numeric_array))
+
+```
+
+Converting the column of strings to integer arrays that depict the durations per harvest within each tree
+
+```{r}
+
+har_dur_df = har_dur_df %>% mutate(dur_harvest_arr = lapply(dur_per_harvest, string_interpret),
+                                   num_presses_arr = lapply(num_presses, string_interpret))
+har_dur_long_df = har_dur_df %>% unnest_longer(c(dur_harvest_arr,num_presses_arr))
+
+har_dur_long_df = har_dur_long_df %>% group_by(subject, env, tree) %>% mutate(har_dur_index = row_number(), dur_per_keypress = dur_harvest_arr/num_presses_arr)
+
+har_dur_long_df[har_dur_long_df$dur_per_keypress==0, ]=  NA
+
+
+```
+
+For each subject, plot the sequence of harvest durations 
+
+```{r}
+har_dur_long_df_short = har_dur_long_df[har_dur_long_df$env=='short_travel',]
+ggplot(data =har_dur_long_df_short) + geom_line(aes(x = har_dur_index, y= dur_harvest_arr, color = tree_type, group = tree))+
+  facet_wrap(shortFirst~subject, nrow = 3, scales="free")+
+  # labs(x = "dur_index", y = "Duration Per Harvest", color= "Tree #")+
+  theme_classic()
+
+har_dur_long_df_long = har_dur_long_df[har_dur_long_df$env=='long_travel',]
+ggplot(data =har_dur_long_df_long) + geom_line(aes(x = har_dur_index, y= dur_harvest_arr, color = tree_type, group = tree))+
+  facet_wrap(shortFirst~subject, nrow = 3, scales="free")+
+  # labs(x = "dur_index", y = "Duration Per Harvest", color= "Tree #")+
+  theme_classic()
+```
+
+Summarize the harvest duration 
+
+```{r}
+
+har_dur_long_summ = har_dur_long_df %>% group_by(subject, env, tree_type, har_dur_index, shortFirst) %>% summarise(mean_har_per_dur = mean(dur_harvest_arr, na.rm=TRUE), sd_har_per_dur = sd(dur_harvest_arr, na.rm=TRUE), mean_dur_per_keypress = mean(dur_per_keypress, na.rm=TRUE), sd_dur_per_keypress = sd(dur_per_keypress, na.rm=TRUE) )
+har_dur_long_summ = har_dur_long_summ %>% mutate(har_per_dur_min = mean_har_per_dur - sd_har_per_dur, har_per_dur_max = mean_har_per_dur + sd_har_per_dur, dur_per_keypress_min = mean_dur_per_keypress - sd_dur_per_keypress, dur_per_keypress_max = mean_dur_per_keypress + sd_dur_per_keypress)
+
+har_dur_long_summ_sf = har_dur_long_summ[har_dur_long_summ$shortFirst == TRUE,]
+
+ggplot(data = har_dur_long_summ_sf) + geom_line(aes(x = har_dur_index, y = mean_har_per_dur, color = tree_type, group = interaction(tree_type, env), linetype = env ))+
+  geom_ribbon(aes(x= har_dur_index, ymin = har_per_dur_min, ymax = har_per_dur_max, fill = tree_type, group = interaction(tree_type, env)), alpha = 0.5)+
+  xlab("harvest index") + ylab("Normalized Harvest Duration")+
+    ggtitle("Short Travel First")+
+  facet_wrap(~subject, scales = "free_x")+
+  theme_classic()
+
+
+har_dur_long_summ_lf = har_dur_long_summ[har_dur_long_summ$shortFirst == FALSE,]
+
+ggplot(data = har_dur_long_summ_lf) + geom_line(aes(x = har_dur_index, y = mean_har_per_dur, color = tree_type, group = interaction(tree_type, env), linetype = env ))+
+  geom_ribbon(aes(x= har_dur_index, ymin = har_per_dur_min, ymax = har_per_dur_max, fill = tree_type, group = interaction(tree_type, env)), alpha = 0.5)+
+  xlab("harvest index") + ylab("Normalized Harvest Duration")+
+    ggtitle("Short Travel First")+
+  facet_wrap(~subject, scales = "free_x")+
+  theme_classic()
+
+```
+Normalizing duration per harvest by number of keypresses 
+
+```{r}
+
+
+har_dur_long_df_short = har_dur_long_df[har_dur_long_df$env=='short_travel',]
+ggplot(data =har_dur_long_df_short) + geom_line(aes(x = har_dur_index, y= dur_per_keypress, color = tree_type, group = tree))+
+  facet_wrap(shortFirst~subject, nrow = 3, scales="free")+
+  # labs(x = "dur_index", y = "Duration Per Harvest", color= "Tree #")+
+  theme_classic()
+
+har_dur_long_df_long = har_dur_long_df[har_dur_long_df$env=='long_travel',]
+ggplot(data =har_dur_long_df_long) + geom_line(aes(x = har_dur_index, y= dur_per_keypress, color = tree_type, group = tree))+
+  facet_wrap(shortFirst~subject, nrow = 3, scales="free")+
+  # labs(x = "dur_index", y = "Duration Per Harvest", color= "Tree #")+
+  theme_classic()
+```
+```{r}
+
+
+ggplot(data = har_dur_long_summ_sf) + geom_line(aes(x = har_dur_index, y = mean_dur_per_keypress, color = tree_type, group = interaction(tree_type, env), linetype = env ))+
+  geom_ribbon(aes(x= har_dur_index, ymin = dur_per_keypress_min, ymax = dur_per_keypress_max, fill = tree_type, group = interaction(tree_type, env)), alpha = 0.5)+
+  xlab("harvest index") + ylab("Normalized Harvest Duration")+
+    ggtitle("Short Travel First")+
+  facet_wrap(~subject, scales = "free")+
+  theme_classic()
+
+
+ggplot(data = har_dur_long_summ_lf) + geom_line(aes(x = har_dur_index, y = mean_dur_per_keypress, color = tree_type, group = interaction(tree_type, env), linetype = env ))+
+  geom_ribbon(aes(x= har_dur_index, ymin = dur_per_keypress_min, ymax = dur_per_keypress_max, fill = tree_type, group = interaction(tree_type, env)), alpha = 0.5)+
+  xlab("harvest index") + ylab("Normalized Harvest Duration")+
+    ggtitle("Short Travel First")+
+  facet_wrap(~subject, scales = "free")+
+  theme_classic()
+```
+## Presentation figures 
+
+1. Num harvests and harvest duration for all the data as a function of both the 
+
+```{r}
+
+plt_num_har <- ggplot(data=har_dur_agg_norm) + geom_line(aes(x = tree_type, y = mean_norm_num_harvests, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_num_harvests_min, ymax = norm_num_harvests_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized Number of Harvests")+
+  theme_classic()+
+  theme(legend.position="none") 
+
+ggsave("plt_num_har.pdf", plt_num_har, width = 5, height = 4)
+ggsave("plt_num_har.png", plt_num_har, width = 5, height = 4)
+
+
+plt_har_dur <- ggplot(data=har_dur_agg_norm) + geom_line(aes(x = tree_type, y = mean_norm_harvest_dur, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = norm_harvest_dur_min, ymax = norm_harvest_dur_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Normalized Harvest Duration")+
+  theme_classic()+
+  theme(legend.position="none") 
+
+ggsave("plt_har_dur.pdf", plt_har_dur, width = 5, height = 4)
+ggsave("plt_har_dur.png", plt_har_dur, width = 5, height = 4)
+
+```
+
+2. Difficulty at the end of harvest 
+
+
+```{r}
+har_dur_agg_sf = har_dur_agg[har_dur_agg$shortFirst==TRUE,]
+ggplot(data=har_dur_agg_sf) + geom_line(aes(x = tree_type, y = mean_difficulty_exit, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = difficulty_exit_min, ymax = difficulty_exit_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Difficulty at Exit")+
+    ggtitle("Short Travel First")+
+  theme_classic()
+
+har_dur_agg_lf = har_dur_agg[har_dur_agg$shortFirst==FALSE,]
+ggplot(data=har_dur_agg_lf) + geom_line(aes(x = tree_type, y = mean_difficulty_exit, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = difficulty_exit_min, ymax = difficulty_exit_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Number of Harvests")+
+    ggtitle("Long Travel First")+
+  theme_classic()
+
+```
+difficulty for entire aggregate 
+
+```{r}
+
+ggplot(data=har_dur_agg) + geom_line(aes(x = tree_type, y = mean_difficulty_exit, color = env, group = env), width = 0, position = position_dodge(width=0.2))+
+  geom_errorbar(aes(x = tree_type, ymin = difficulty_exit_min, ymax = difficulty_exit_max, color =env), width = 0, position = position_dodge(width=0.2))+
+  xlab("Tree Type") + ylab("Number of Harvests")+
+  theme_classic()
+
+```
+```{r}
+
+plt_diff_exit_sf <- ggplot(data=har_dur_agg_sf) + geom_bar(aes(x = env, y = mean_difficulty_exit, fill = env), stat="identity")+
+  geom_errorbar(aes(x = env, ymin = difficulty_exit_min, ymax = difficulty_exit_max), width=0)+
+  facet_wrap(~tree_type)+
+  ggtitle("Short Travel First")+
+  xlab("Environment") + ylab("Difficulty at Exit")+
+  theme_classic()+theme(legend.position = "none")
+
+ggsave("plt_diff_exit_sf.pdf", plt_diff_exit_sf, width = 5, height = 4)
+ggsave("plt_diff_exit_sf.png", plt_diff_exit_sf, width = 5, height = 4)
+
+plt_diff_exit_lf <- ggplot(data=har_dur_agg_lf) + geom_bar(aes(x = env, y = mean_difficulty_exit, fill = env), stat="identity")+
+  geom_errorbar(aes(x = env, ymin = difficulty_exit_min, ymax = difficulty_exit_max), width=0)+
+  facet_wrap(~tree_type)+
+  ggtitle("Long Travel First")+
+  xlab("Environment") + ylab("Difficulty at Exit")+
+  theme_classic()+theme(legend.position = "none")
+
+ggsave("plt_diff_exit_lf.pdf", plt_diff_exit_lf, width = 5, height = 4)
+ggsave("plt_diff_exit_lf.png", plt_diff_exit_lf, width = 5, height = 4)
+
+```
+
+all aggregate data for difficulty at exit
+
+```{r}
+
+har_dur_all_agg = har_dur_df %>% group_by(env, tree_type) %>% summarise(mean_num_harvests = mean(num_harvests), sd_num_harvests = sd(num_harvests), mean_harvest_dur = mean(harvest_dur), sd_harvest_dur = sd(harvest_dur), mean_difficulty_exit = mean(difficulty_at_exit), sd_difficulty_exit = sd(difficulty_at_exit)) 
+
+har_dur_all_agg = har_dur_all_agg %>% mutate(num_harvests_min = mean_num_harvests - sd_num_harvests, num_harvests_max = mean_num_harvests + sd_num_harvests, harvest_dur_min = mean_harvest_dur - sd_harvest_dur, harvest_dur_max = mean_harvest_dur + sd_harvest_dur, difficulty_exit_min = mean_difficulty_exit - sd_difficulty_exit, difficulty_exit_max = mean_difficulty_exit + sd_difficulty_exit)
+
+
+
+plt_diff_exit <- ggplot(data=har_dur_all_agg) + geom_bar(aes(x = env, y = mean_difficulty_exit, fill = env), stat="identity")+
+  geom_errorbar(aes(x = env, ymin = difficulty_exit_min, ymax = difficulty_exit_max), width=0)+
+  facet_wrap(~tree_type)+
+  xlab("Environment") + ylab("Difficulty at Exit")+
+  theme_classic()+theme(legend.position = "none")
+ggsave("plt_diff_exit.pdf", plt_diff_exit, width = 5, height = 4)
+ggsave("plt_diff_exit.png", plt_diff_exit, width = 5, height = 4)
+```
+
+Individual line plots over aggregate line plot 
+
+```{r}
+
+har_dur_agg_subj = har_dur_df %>% group_by(env, tree_type, subject) %>% 
+  summarise(mean_norm_num_harvests = mean(norm_num_harvests), 
+            sd_norm_num_harvests = sd(norm_num_harvests), 
+            mean_norm_harvest_dur = mean(norm_harvest_dur), 
+            sd_norm_harvest_dur= sd(norm_harvest_dur), 
+            mean_difficulty_exit = mean(difficulty_at_exit), 
+            sd_difficulty_exit = sd(difficulty_at_exit)) 
+
+
+har_dur_agg_norm = har_dur_agg_subj %>% group_by(env, tree_type) %>% 
+  summarise(mean_norm_num_harvests2 = mean(mean_norm_num_harvests), 
+            sd_norm_num_harvests2 = st.err(mean_norm_num_harvests), 
+            mean_norm_harvest_dur2 = mean(mean_norm_harvest_dur), 
+            sd_norm_harvest_dur2= st.err(mean_norm_harvest_dur), 
+            mean_difficulty_exit2 = mean(mean_difficulty_exit), 
+            sd_difficulty_exit = st.err(mean_difficulty_exit)) 
+
+har_dur_agg_norm = har_dur_agg_norm %>% mutate(norm_harvest_dur_min = mean_norm_harvest_dur2 - sd_norm_harvest_dur2,
+                                               norm_harvest_dur_max = mean_norm_harvest_dur2 + sd_norm_harvest_dur2, 
+                                               norm_num_harvests_min = mean_norm_num_harvests2 - sd_norm_num_harvests2, 
+                                               norm_num_harvests_max = mean_norm_num_harvests2 + sd_norm_num_harvests2,
+                                               difficulty_exit_min = mean_difficulty_exit2 - sd_difficulty_exit, 
+                                               difficulty_exit_max = mean_difficulty_exit2 + sd_difficulty_exit)
+
+p <- ggplot() + geom_line(data = har_dur_agg_norm,aes(x= tree_type, y = mean_norm_harvest_dur2, color = env, group = env), size = 1)+
+  geom_point(data = har_dur_agg_norm, aes(x= tree_type, y = mean_norm_harvest_dur2), size = 4)+
+   scale_shape(solid = FALSE)+
+  geom_errorbar(data = har_dur_agg_norm,aes(x = tree_type, ymin = norm_harvest_dur_min, ymax = norm_harvest_dur_max, color= env ), width = 0)
+p
+p = p + geom_line(data = har_dur_agg_subj, aes(x = tree_type, y = mean_norm_harvest_dur, group = interaction(subject, env) ,color= env) , alpha =0.5, size = 0.3)+
+  geom_point(data = har_dur_agg_subj, aes(x = tree_type, y = mean_norm_harvest_dur, group = interaction(subject, env) ,color= env), shape = 1, size = 2)+
+  xlab("Tree Type")+ ylab("Harvest Duration (norm)")+ theme_classic()+
+  theme(legend.position = "none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+p
+
+ggsave("plot_norm_har_dur.pdf", p, width = 5, height = 4)
+```
+
+```{r}
+p <- ggplot() + geom_line(data = har_dur_agg_norm,aes(x= tree_type, y = mean_norm_num_harvests2, color = env, group = env), size = 1)+
+  geom_point(data = har_dur_agg_norm, aes(x= tree_type, y = mean_norm_num_harvests2), size = 4)+
+   scale_shape(solid = FALSE)+
+  geom_errorbar(data = har_dur_agg_norm,aes(x = tree_type, ymin = norm_num_harvests_min, ymax = norm_num_harvests_max, color= env ), width = 0)
+p
+p = p + geom_line(data = har_dur_agg_subj, aes(x = tree_type, y = mean_norm_num_harvests, group = interaction(subject, env) ,color= env) , alpha =0.5, size = 0.3)+
+  geom_point(data = har_dur_agg_subj, aes(x = tree_type, y = mean_norm_num_harvests, group = interaction(subject, env) ,color= env), shape = 1, size = 2)+
+  xlab("Tree Type")+ ylab("Number of harvests (norm)")+ theme_classic()+
+  theme(legend.position = "none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+p
+```
+
+
+```{r}
+
+p <- ggplot() + geom_bar(data = har_dur_agg_norm,aes(x= env, y = mean_norm_harvest_dur2, fill = tree_type), size = 2, alpha = 0.3,position=position_dodge(width = 1), stat="identity")+
+  geom_errorbar(data = har_dur_agg_norm,aes(x = env, ymin = norm_harvest_dur_min, ymax = norm_harvest_dur_max, color= tree_type ),position=position_dodge(width = 1), width = 0)
+# p
+# 
+# p = p + geom_line(data = har_dur_agg_subj, aes(x = env, y = mean_norm_harvest_dur, group = interaction(subject, tree_type), alpha =0.5, position = position_dodge(width = 1)))+ theme_classic()+
+#   xlab("Tree Type")+ ylab("Harvest Duration (norm)")
+p
+```
+```{r}
+
+p <- ggplot() + geom_bar(data = har_dur_agg_norm,aes(x= env, y = mean_difficulty_exit2, fill = env), size = 2, alpha = 0.3,position=position_dodge(width = 1), stat="identity")+
+  geom_errorbar(data = har_dur_agg_norm,aes(x = env, ymin = difficulty_exit_min, ymax = difficulty_exit_max, color= env ),position=position_dodge(width = 1), width = 0)+facet_wrap(~tree_type)
+
+p = p + geom_line(data = har_dur_agg_subj, aes(x = env, y = mean_difficulty_exit
+                                               ,color= tree_type, group = interaction(subject, tree_type) ) , alpha =0.5, size = 0.3)+
+  geom_point(data = har_dur_agg_subj, aes(x = env, y = mean_difficulty_exit ,color= env), shape = 1, size = 2)+
+  facet_wrap(~tree_type)+
+  xlab("Tree Type")+ ylab("Harvest Difficulty at Exit")+ theme_classic()+
+  theme(legend.position = "none", axis.text=element_text(size=12), axis.title=element_text(size=14,face="bold"))
+p
+ggsave("plot_har_difficulty.pdf", p, width = 5, height = 4)
+```
+
+Statistics for the different quantities 
+
+- instead of plotting the normalized responses, plot the estimated marginal means based on covariates added
+
+Formula:
+
+harvest duration ~ 1 + patch_type*env_type + (1|Subject) 
+
+
+```{r}
+har_dur_df$harvest_dur_scaled = har_dur_df$harvest_dur/1000
+mdl_har_duration = lmer(data= har_dur_df, harvest_dur_scaled ~ env * tree_type + (1|subject))
+summary(mdl_har_duration)
+plot_model(mdl_har_duration, type="diag")
+```
+Estimated marginal means and corresponding plot 
+
+```{r}
+EMM.env = emmeans(mdl_har_duration, "env")
+```
+
+
+Statistical modelling for number of harvests metric 
+
+Reasons for separating the two metrics :
+- harvest duration should be correlated with number of harvests
+- Subjects have the ability to adjust the time taken for subsequent harvests 
+
+```{r}
+
+mdl_num_harvests = lmer(data= har_dur_df, num_harvests ~ env * tree_type + (1|subject))
+summary(mdl_num_harvests)
+plot_model(mdl_num_harvests, type="diag")
+```
+
+
+Harvest Rate at the end of harvest 
+
+```{r}
+
+ggplot(data= har_dur_df_sf) + geom_line(aes(x = tree, y = avg_harvest_rate, color = env))+
+  facet_wrap(shortFirst~subject, nrow=3, scales = "free")+
+  xlab("Tree") + ylab("Harvest Duration (ms)")+
+  ggtitle("Short Travel First")+
+  theme_classic()
+
+ggplot(data= har_dur_df_lf) + geom_line(aes(x = tree, y = avg_harvest_rate, color = env))+
+  facet_wrap(shortFirst~subject, nrow=3, scales = "free_x")+
+  xlab("Tree") + ylab("Harvest Duration (ms)")+
+  ggtitle("Long Travel First")+
+  theme_classic()
+```
+
+a`
+ 
