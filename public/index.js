@@ -325,6 +325,8 @@ function checkInactive(){
 	}, inactiveLimSeconds * 1000)
 }
 
+
+// FOR MAX: CALIBRATION PHASE BASE CODE (USE IT OR LEAVE IT)
 function monitorCalibration(curr_html_page){
 	
 	gameState = CALIBRATION;
@@ -345,7 +347,7 @@ function monitorCalibration(curr_html_page){
 	  var now = new Date().getTime();
 
 	  // Find the distance between now and the count down date
-	  timeRemaining =    countDownDate.getTime() - now;
+	  timeRemaining =  countDownDate.getTime() - now;
 
 	  // Time calculations for days, hours, minutes and seconds
 	  var minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -645,8 +647,8 @@ function runTimer(){
 	  // Display the result in the element with id="demo"
 	  document.getElementById("timer").innerText = minutes + "m :" + seconds + "s ";
 	  //
-	  // console.log("Time Remaining")
-	  // console.log(timeRemaining)
+	  console.log("Time Remaining")
+	  console.log(timeRemaining)
 	  //
 	  // If the count down is finished, write some text 
 	  if (timeRemaining < 0) {
