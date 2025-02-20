@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foraging Experiment</title>
+
+
+  <link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="/static/style.css" type="text/css" />
+  
+  <!-- update the version number as needed -->
+  <script src="/__/firebase/6.6.1/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script src="/__/firebase/6.6.1/firebase-auth.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-database.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-firestore.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-messaging.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-storage.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script src="/__/firebase/init.js"></script>
+
+  <!-- update the version number and uncomment features as needed -->
+  <!-- <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js""></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script> -->
+  <!-- <script src="https://www.gstatic.com/firebase/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-messaging-compat.js"></script>
+  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js""></script>
+  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-remote-config-compat.js"></script> -->
+  <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+  <!-- <script src="https://www.gstatic.com/firebase/init.js?useEmulator=true"></script> -->
+  <!-- ß -->
+
+  <style media="screen">
+  </style>
+</head>
+
+<body>
+	
+  <!-- Consent Page-->
+  <div id="container-consent">
+      <div id="consent">
+          <h1><b><u>Welcome</u></b></h1>
+          <h2>but first, we need your consent to proceed...</h2>
+          <hr />
+          <div class="legal well">
+              <p>
+                  We would like to invite you the take part in the following study named "Foraging for Reward: Pick as many apples as you can"
+              </p>
+              <p>
+                  This will take approximately 40 minutes, with the total game time being conducted in 2 blocks of 15 minutes each.<br> Please understand that we <em>reserve the right to not compensate entries</em> that fail to follow instructions during the experiment.
+                  <br>
+              </p>
+              <div id="consentForm">
+                  <iframe frameborder="1" id="consentForm" src="https://drive.google.com/file/d/1fCu-JrHFVy9OI1SPZcSczkHNNZQD4tbj/preview"></iframe>
+              </div>
+              <button type="button" class="btn btn-default btn-sm" onClick="window.print();">
+            <span class="glyphicon glyphicon-print"></span> Print a copy of this
+            </button>
+          </div>
+          <hr />
+          <h4>If you agree and consent to these terms, please click "I Agree" to continue. Otherwise, please exit the page and return this HIT.</h4>
+          <br />
+          <center>
+              <button type="button" class="btn btn-danger btn-lg" onClick="return show('final-page', 'container-consent');">
+            <span class="glyphicon glyphicon-ban-circle"></span> I do <u><b>NOT</b></u> consent to these terms.
+            </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions1', 'container-consent');">
+            <span class="glyphicon glyphicon-ok"></span> I Agree
+            </button>
+          </center>
+      </div>
+  </div>
+
+
+  <!-- Instruction Page 1-->
+  <div id="container-instructions1", style="display:none">
+    <h1>Instructions</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+      <h2>Thank you for participating in our study!</h2>
+      <p>
+		  Your goal is to collect as many apples as you can from virtual apple trees.
+		<!-- Here, you will play a very simple game in which your goal will be to collect as many apples as you can from virtual apple trees. The game screen will look like this: -->
+      </p>
+	  <p>At the start of the game, the screen will look like this:</p>
+	  <img src="../images/instructions1.png">
+    </div>
+    <hr>
+    <center>
+      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions1');">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next
+      </button>
+      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+    </center>
+  </div>
+  
+  <!-- Instruction Page 2-->
+  <div id="container-instructions2", style="display:none">
+    <h1>Instructions</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+      <p>
+		To collect apples from the tree, you hit the spacebar.  Each time you hit the spacebar, a green rectangle will grow within the bar on the right side of the screen.
+      </p>
+      <img src="../images/instructions2.png">
+    </div>
+    <hr>
+    <center>
+      <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions1', 'container-instructions2');">
+        <span class="glyphicon glyphicon-arrow-left"></span> Back 
+   	  </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions3', 'container-instructions2');">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next
+      </button>
+      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+    </center>
+  </div>
+  
+  <!-- Instruction Page 3-->
+  <div id="container-instructions3", style="display:none">
+    <h1>Instructions</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+      <p>
+		When the green rectangle reaches the top, you receive your apples.
+      </p>
+      <img src="../images/instructions3.png">
+    </div>
+    <hr>
+    <center>
+      <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions2', 'container-instructions3');">
+        <span class="glyphicon glyphicon-arrow-left"></span> Back 
+   	  </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions4', 'container-instructions3');">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next
+      </button>
+      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+    </center>
+  </div>
+  
+  
+  
+ <!-- Instruction Page 4-->
+  <div id="container-instructions4", style="display:none">
+    <h1>Instructions</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+ 
+	  <p> A blue number will then appear on the left side of the screen indicating the number of apples you received from the tree on that round.  You can also see the size of your harvest by the number of apples appearing on the ground below the tree.
+</p>
+	  <p> A running score will be updated on the top left indicating your total number of harvested apples.  You want to make this number as large as possible.</p>
+	  <!-- <p> This will also be visually indicated by apples appearing below the tree. </p> -->
+      <img src="../images/instructions4.png">
+    </div>
+    <hr>
+    <center>
+        <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions3', 'container-instructions4');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+        </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions5', 'container-instructions4');">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next
+      </button>
+      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+    </center>
+  </div>
+  
+  
+  
+  <!-- Instruction Page 5-->
+   <div id="container-instructions5", style="display:none">
+     <h1>Instructions</h1>
+     <!-- <hr> -->
+     <div class="instructions well">
+       <p>
+		You always have two options. 
+		<!-- At any point while harvesting apples from a tree, you can press the enter key to move on to the next tree.  -->
+       </p>
+	   <p>One option is to continue harvesting apples from the current tree.  You do this by hitting the spacebar.</p>
+	   <p>The second option is to move to another tree.  You do this by hitting the Enter key.</p>
+	   <p>However, after hitting the Enter key, you will experience a delay before the next tree appears.</p>
+       <!-- <p>
+		Before the next tree appears, you will experience a time delay while you see the following message on the screen.
+       </p> -->
+       <img src="../images/instructions5.png">
+     </div>
+     <hr>
+     <center>
+         <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions4', 'container-instructions5');">
+             <span class="glyphicon glyphicon-arrow-left"></span> Back 
+         </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions6', 'container-instructions5');">
+         <span class="glyphicon glyphicon-arrow-right"></span> Next
+       </button>
+       <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+         <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+     </center>
+   </div>
+  
+  <!-- Instruction Page 6-->
+   <div id="container-instructions6", style="display:none">
+     <h1>Instructions</h1>
+     <!-- <hr> -->
+     <div class="instructions well">
+       <p>
+		   You will have two rounds of 15 minutes to collect as many apples as possible.  A countdown timer will indicate how much time you have left for the current round.
+		<!-- You will be required to perform this in two blocks of 15 minutes each. A countdown timer will indicate how much time you have left. -->
+       </p>
+       <img src="../images/instructions6.png">
+     </div>
+     <hr>
+     <center>
+         <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions5', 'container-instructions6');">
+             <span class="glyphicon glyphicon-arrow-left"></span> Back 
+         </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions7', 'container-instructions6');">
+         <span class="glyphicon glyphicon-arrow-right"></span> Next
+       </button>
+       <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+         <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+     </center>
+   </div>
+   
+   
+   <!-- Instruction Page 7-->
+    <div id="container-instructions7", style="display:none">
+      <h1>Instructions</h1>
+      <!-- <hr> -->
+      <div class="instructions well">
+        <!-- <p>
+ 		If at any point, you need a reminder of which keys to press, please refer to the quick guide at the left bottom of the screen.
+        </p> -->
+		<p>Remember, you always have two options:</p>
+		<ul>
+			<li>Spacebar:   Continue harvesting from the current tree.</li>
+			<li>Enter key:   Move to a new tree. </li>
+		</ul>
+        <img src="../images/instructions7.png">
+      </div>
+      <hr>
+      <center>
+          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions6', 'container-instructions7');">
+              <span class="glyphicon glyphicon-arrow-left"></span> Back 
+          </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions8', 'container-instructions7');">
+          <span class="glyphicon glyphicon-arrow-right"></span> Next
+        </button>
+        <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+          <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+      </center>
+    </div>
+	
+	
+    <!-- Instruction Page 8-->
+     <div id="container-instructions8", style="display:none">
+       <h1>Instructions</h1>
+       <!-- <hr> -->
+       <div class="instructions well">
+         <!-- <p>
+  		When the timer elapses, you will see a message indicating a break before moving on to the next block. If you have completed both blocks of trials, then you will see a final message about the game ending.
+         </p>
+		 <p style = "color:red; font-size:120%">Do not defocus the game, resize the window or stay idle for too long. The game will be terminated if you do any of these more times than acceptable. This will affect your eligibility to be paid.</p>
+		 <p>After the game ends, please complete the final questionnaire. </p>
+		 <p>You will receive a completion code at the end of the game. </p>
+		 <p><strong>Note:</strong> this code helps us verify that you have finished the game which we will use to authorize payment. </p> -->
+			 
+		<p>You will get a break between Rounds 1 and 2. </p>
+		<p>You will receive a completion code at the end of Round 2 which will be used to authorize payment.  </p>
+		<p style = "color:red; font-soze:110%"><strong>The game will be terminated if you leave the game screen or fail to play the game (that is, have an extended pause between hitting the Spacebar or Enter key).</strong></p>  		
+		<p style = "color:red; font-soze:110%">You will not be paid if the game is terminated for these reasons. </p>
+		<p>Remember:  The goal is to collect as many apples as possible. </p>
+
+         <!-- <img src="../images/instructions6.png"> -->
+       </div>
+       <hr>
+       <center>
+           <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions7', 'container-instructions8');">
+               <span class="glyphicon glyphicon-arrow-left"></span> Back 
+           </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+         <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions8');">
+           <span class="glyphicon glyphicon-arrow-right"></span> Next
+         </button>
+         <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+           <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+       </center>
+     </div>
+  
+  <!-- Initial Form for basic information 
+  **TODO** Update questions accordingly to what kinds of information you require-->
+  <div id="container-info" style="display:none">
+      <!-- CHANGE INDEX.JS CHECKINFO() IF MODIFIED -->
+      <h1>Basic Information</h1>
+      <hr>
+
+      <form id='infoform'>
+          <div class="row-question">
+
+              <div class="questions" id="email">
+                  Prolific WorkerID:
+                  <input id="email-input" type="text" name="email" value="">
+              </div>
+
+              <div class="questions" id="age">
+                  Age:
+                  <input id="age" type="text" name="age" value="">
+              </div>
+
+              <div class="questions" id="sex">
+                  Gender:
+                  <select id="gender" name="gender">
+                    <option value=""></option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Genderqueer/Non-Binary</option>
+                </select>
+              </div>
+
+              <div class="questions" id="handedness">
+                  Right or left handed:
+                  <select id="hand" name="hand">
+                  <option value=""></option>
+                  <option value="righth">Right</option>
+                  <option value="lefth">Left</option>
+                  <option value="bothh">Ambidextrous</option>
+              </select>
+              </div>
+
+              <div class="questions" id="returner">
+                  Have you done our experiments before?
+                  <select id="repeat" name="repeater">
+                  <option value=""></option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="idk">I don't remember</option>
+              </select>
+              </div>
+
+              <!-- <div class="questions" id="startcode">
+                  What's the code from the last page (Reread the instructions page if you don't know):
+                  <input id="age" type="text" name="age" value="">
+              </div> -->
+
+              <hr>
+
+              <p>
+                  The following information is requested by the National Institute of Health. You are not <em>required</em>, but are encouraged to complete these.
+              </p>
+
+              <div class="questions" id="ethnicity">
+                  Ethnic Origin:
+                  <select id="ethnic" name="ethnic">
+                  <option value="">
+                  <option value="hispanic">Hispanic or Latino</option>
+                  <option value="non-hispanic">Not Hispanic or Latino</option>
+              </select>
+              </div>
+
+              <div class="questions" id="racial origin">
+                  Racial Origin:
+                  <select id="race" name="race">
+                  <option value="">
+                  <option value="indian/native">American Indian or Alaskan Native</option>
+                  <option value="asian">Asian</option>
+                  <option value="african-american">Black or African American</option>
+                  <option value="pacific-islander">Native Hawaiian or Other Pacific Islander</option>
+                  <option value="white">White or Caucasian</option>
+                  <option value="multiple">More than one race</option>
+                  <option value="unkown">Unknown</option>
+              </select>
+              </div>
+
+          </div>
+      </form>
+      <hr>
+      <center>
+          <!-- <h1><b><em>Please enter fullscreen mode before you begin.</em></b></h1> //only for safari
+          <hr> -->
+          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions8', 'container-info');">
+              <span class="glyphicon glyphicon-arrow-left"></span> Back 
+          </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
+              Begin Experiment <span class="glyphicon glyphicon-arrow-right"></span>
+          </button>
+      </center>
+  </div>
+
+  <div id="container-exp" style="display:none">
+  </div>
+
+  <div id="calibration", style = "display:none">
+        <div class="calibration_score"><strong>Score:</strong> <span id="scoreValue">0</span></div>
+  		<div class = "timer_calibration_div"><strong>Time Left:</strong> <span id="timer"></span></div>
+  </div>
+  
+  <div id = "calib_bw_block", style="display:none">
+      <!-- <hr> -->
+      <div class="instructions well">
+        <p>
+ 		   You have pressed the space bar <span id="num_keypresses"></span> times in 40 seconds. If you can beat this score this time around, we will give you an additional $1 with the rest of your compensation. 
+        </p>
+        <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
+            Continue <span class="glyphicon glyphicon-arrow-right"></span>
+        </button>
+      </div>
+  </div>
+  
+  <div id="blinking" , style="display:none">
+    <div id="container"> 
+      <svg id="basket_svg" viewBox="0 0 120 68" style="border: 1px solid black">
+        <!-- Tree SVG -->
+	        <svg id="Tree" viewBox="50 -20 40 60">
+	          <!-- Tree elements go here -->
+	        </svg>
+	        <!-- Apples SVG -->
+	        <svg id="Apples" viewBox="50 -20 40 60">
+	          <!-- Apple elements go here -->
+	        </svg>
+	        <!-- Fallen Apples SVG -->
+	        <svg id="FallenApples" viewBox="0 0 120 68">
+	          <!-- Fallen apple elements go here -->
+	        </svg>
+		</svg>
+
+        <!-- Additional score display -->
+        
+		<div class="score"><strong>Score:</strong> <span id="scoreValue">0</span></div>
+        <div id="additionalScore"></div>
+        <div id="reset-instruction"></div>
+        <div id="progress-bar-container">
+          <div id="progress-bar"></div>
+        </div>
+		<div class = "timer_div"><strong>Time Left:</strong> <span id="timer"></span></div>
+		<div class = "key_instructions">
+			<p class="space_inst"><strong>Spacebar:</strong> Collect More Apples</p>
+			<p class="enter_inst"><strong>Enter:</strong> Move to Next Tree</p>
+		</div>
+		<div id = "warning", style = "display:none">
+			<p><strong>PLEASE REFOCUS YOUR ATTENTION BACK TO THE GAME!!</strong><p>
+				<p> The game will exit if you don't perform an appropriate action soon <p>
+		</div>
+    </div>
+  </div>
+  
+  <div id="next" , style="display:none">
+    <h1 style="font-size: 150%">Waiting for the next tree...</h1>
+  </div>
+  
+  <div id="container-bw-blocks", style="display:none">
+      <h1>Congrats! </h1>
+      <hr>
+	  <h2>You just completed the first block with <span id ="num_apples"></span> apples!!</h2>
+      <div class="instructions mid block">
+        <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
+		<p>If you don't press the button in 5 minutes, you will automatically be advanced to the next block.</p>
+		<p>Please continue to follow the same instructions on the next block; Remember: hit the "space bar" to collect apples and "enter" key to move to the next tree. </p>
+	    <center>
+	      <button type="button" class="btn btn-primary btn-lg" onClick="return checkInfo();">
+	        <span class="glyphicon glyphicon-arrow-right"></span> Next
+	      </button>
+	    </center>
+	</div>
+  </div>
+
+	<div id = "container-end-block", style="display:none">
+        <h1>Congrats! </h1>
+        <hr>
+	  	  <h2>You just completed the second and last block with <span id ="num_apples2"></span> apples!!</h2>
+	      <hr>
+	      <center>
+	        <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-not-an-ad', 'container-end-block');">
+	          <span class="glyphicon glyphicon-arrow-right"></span> Next
+	        </button>
+	      </center>
+	</div>
+
+  <!-- Thank you page 
+      **TODO** Update the completion code if necessary-->
+  <div id="container-not-an-ad", style="display:none">
+      <!-- <div class="media-left pull-left" href="#">
+          REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+          <!-- <img id="adlogo" src="images/university.png" alt="Lab Logo" /> -->
+       <!-- </div> -->
+      <div class="media-body">
+
+      <h2>Now just a few more question and you're done!</h2>
+      <form id="distractionForm">
+          <div class="question" id="distraction">
+              Please check any items that you have engaged in during the task. Please answer truthfully (there will be no penalty). <br>
+              <input type="checkbox" id="distract1" name="distract1" value="Phone">
+              <label for="distract1"> I used my cellphone</label><br>
+              <input type="checkbox" id="distract2" name="distract2" value="internet">
+              <label for="distract2"> I browsed the internet</label><br>
+              <input type="checkbox" id="distract3" name="distract3" value="person">
+              <label for="distract3"> I talked to another person</label><br>
+              <input type="checkbox" id="distract4" name="distract4" value="tv">
+              <label for="distract4"> I watched TV</label><br>
+              <input type="checkbox" id="distract5" name="distract5" value="music">
+              <label for="distract5"> I listened to music</label><br>
+              <input type="checkbox" id="distract6" name="distract6" value="restroom">
+              <label for="distract6"> I went to the restroom</label><br>
+              <input type="checkbox" id="distract7" name="distract7" value="other">
+              <label for="distract4"> Other</label><br>
+          </div>
+          <div class="question" id="feedback">
+              If you checked "Other," please indicate here:
+              <input id="distracto" type="text" name="distracto" value="">
+          </div>
+          </form>
+          <form id="feedbackForm">
+              <div class="question" id="feedback">
+                  Let us know if you had any issues with this experiment.
+                  <input id="feedback" type="text" name="feedback" value="">
+              </div>
+          </form>
+          <center>
+              <!-- <h1><b><em>Please enter fullscreen mode before you begin.</em></b></h1> //only for safari
+              <hr> -->
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" id="end" value="final" onClick="saveFeedback();">
+                  Submit 
+              </button>
+          </center>
+      </div>
+  </div>
+
+  <!-- Ended early page -->
+  <div id="container-failed" style="display:none">
+      <div class="media-left pull-left" href="#">
+          <!-- **TODO** REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+          <img id="adlogo" src="images/university.png" alt="Lab Logo" />
+      </div>
+      <div class="media-body">
+          <h1>Attention Check Failed. DO NOT REFRESH!</h1>
+          <hr />
+          <p>If you are seeing this page it means you either defocussed from the game more times than admissible or were inactive for longer than 45 seconds.</p>
+            <body>This task requires your full attention, thus we kindly ask you to exit and return your submission.</body>  <br>
+            <body><b> Please DO NOT refresh the page to redo the experiment. <br>
+                If you do, you will not be compensated and we will not use your data.</b></body>  <br>
+            <body>We're sorry for this inconvenience.</body>
+      </div>
+  </div>
+
+  <!-- Final Page -->
+  <div id="final-page" style="display:none">
+      <div class="media-left pull-left" href="#">
+          <!-- **TODO** REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+          <img id="adlogo" src="images/university.png" alt="Lab Logo" />
+      </div>
+      <div class="media-body">
+          <h1>Your responses has been saved, thank you!</h1>
+          <hr />
+		  <h3>This study's completion code is: <FONT COLOR=red><u>CY3Y7N9N</u></FONT></h3>
+      </div>
+  </div>
+  
+  <script src="static/lib/jquery-min.js"></script>
+  <script src="static/lib/bootstrap.min.js"></script>
+  <script src="static/lib/d3.v3.min.js"></script>
+  <script src="static/lib/underscore-min.js"></script>
+  <script src="static/lib/backbone-min.js"></script>
+  <script src="index2"></script>
+</body>
+</html>
