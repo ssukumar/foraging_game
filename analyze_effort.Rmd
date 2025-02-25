@@ -1,0 +1,456 @@
+---
+title: "Analyze Effort Rate"
+author: "Shruthi Sukumar"
+date: "2025-02-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(lme4)
+library(lmerTest)
+library(sjPlot)
+library(emmeans)
+library(gridExtra)
+```
+
+## Wrangle dataset 
+
+```{r wrangle, echo=FALSE}
+csv_filename = "prolific_dat_corrected.csv"
+data_sf = read.csv(csv_filename, header =TRUE)
+data_sf = data_sf %>% mutate(longFirst = FALSE)
+data_sf = data_sf %>% select(!TreeNumber) %>% rename("TreeNumber" = "TreeNumberCorrected")
+
+csv_filename2 = 'prolific_dat_longfirst.csv'
+data_lf = read.csv(csv_filename2, header=TRUE)
+data_lf = data_lf %>% mutate(longFirst = TRUE)
+data_lf = data_lf %>% rename("Subject" = "Subject.ID")
+
+data_sf = data_sf %>% relocate(TreeNumber, .after=Block)
+
+data_all = data_lf #rbind(data_sf, data_lf)
+
+data_all = data_all %>% group_by(Subject, TreeNumber, TravelTime)%>% 
+  mutate(harvest_id =  lag(cumsum(RequiredPresses != lead(RequiredPresses))), 
+           # ifelse(is.na(lag(cumsum(RequiredPresses != lead(RequiredPresses))) ),  1 *(RequiredPresses>1), lag(cumsum(RequiredPresses != lead(RequiredPresses)))),
+         time_since_last_press = TimeStamp - lag(TimeStamp))
+# data_all = data_all %>% mutate(harvest_id = ifelse(harvest_id ==0, 1 *(RequiredPresses>1), harvest_id) )
+subjects = unique(data_all$Subject)
+
+data_all = data_all %>% mutate(patch_type = if_else(KeyPressIncreaseRate == 2, 'good', 'bad'),
+                               env_type = if_else(TravelTime==5, 'short travel', 'long travel'))
+
+# for(subj in subjects) { 
+#   data_all$TreeNumber[data_all$Block == 1 & data_all$Subject==subj] = data_all$TreeNumber[data_all$Block == 1 & data_all$Subject==subj] - max(data_all$TreeNumber[data_all$Block == 0 & data_all$Subject==subj])
+#   }
+
+```
+
+Verify the harvest_id variable
+
+```{r}
+ggplot(data_all, aes(x= harvest_id, y= RequiredPresses))+geom_point()
+
+print(unique(data_all$RequiredPresses[data_all$harvest_id==0]))
+data_wrong = data_all[data_all$harvest_id==0 & data_all$RequiredPresses>1,]
+
+print(unique(data_all$RequiredPresses[data_all$KeyPressIncreaseRate==5]))
+
+```
+
+
+
+## Plots for analyzing effort cadence
+
+What is the distribution of time to keypresses per subject?
+
+```{r plot_hist1, echo=FALSE}
+data_subj1 = data_all[data_all$Subject==subjects[1] & data_all$TreeNumber <=10,] 
+
+ggplot(data = data_subj1) + geom_histogram(aes(x = time_since_last_press, fill = factor(TravelTime)), binwidth = 10, alpha = 0.5)+
+  facet_wrap(~TreeNumber, scales="free")+
+  xlim(0,500)
+
+ggplot(data = data_all, aes(x = time_since_last_press, fill = factor(TravelTime))) + geom_histogram(binwidth = 10, alpha = 0.5)+
+  facet_wrap(~Subject, scales="free")+geom_vline(xintercept=250, linetype = "dashed")+
+  xlim(0,500)+theme_classic()
+
+agg_data_subj = data_all %>% group_by(TravelTime, KeyPressIncreaseRate) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press),
+            st_time_bw_keypresses = sd(time_since_last_press)) %>% 
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses )
+
+```
+
+Inference/insight:
+- most subjects seem to have an average duration of 250ms or less between keypresses. 
+- some subjects appear to have a bimodal distribution of bw-keypress duration 
+
+
+Average vigor in good v/s bad patch
+
+```{r}
+agg_data = data_all %>% group_by(Subject, TravelTime,KeyPressIncreaseRate, patch_type, env_type) %>% 
+  filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press) ) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press),
+            st_time_bw_keypresses = sd(time_since_last_press)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+
+agg_data_subj = agg_data %>% group_by(TravelTime,  KeyPressIncreaseRate, patch_type, env_type) %>% 
+  filter(abs(mean_time_bw_keypresses - mean(mean_time_bw_keypresses)) < 2* sd(mean_time_bw_keypresses) ) %>%
+  summarise(mean_time_bw_keypresses_subj = mean(mean_time_bw_keypresses),
+            st_time_bw_keypresses_subj = sd(mean_time_bw_keypresses)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses_subj - st_time_bw_keypresses_subj,
+         time_bw_keypresses_max = mean_time_bw_keypresses_subj + st_time_bw_keypresses_subj)
+
+pos <- position_dodge(width=0.9)
+
+ggplot(agg_data_subj_filt, aes(x = patch_type, y = mean_time_bw_keypresses_subj, ymin = time_bw_keypresses_min, 
+                               ymax = time_bw_keypresses_max, fill = env_type, group=TravelTime)) +
+  geom_bar(position = pos, stat="identity")+
+  geom_errorbar(position = pos, width=0)+
+  ylab('Inter-Keypress Time')+
+  theme_classic()
+```
+
+
+What is the pattern of this time-bw-keypresses as a funciton of required keypresses.
+
+Note: there are issues in the data, indicating bugs either in the data collection code or the logic of the task itself on firebase/javascript
+
+
+How do subjects modulate effort rate as a function of number of keypresses?
+
+```{r agg_summarise, echo=FALSE}
+
+agg_data = data_all %>% group_by(Subject, TravelTime, RequiredPresses, KeyPressIncreaseRate, patch_type, env_type) %>% 
+  filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press) ) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press),
+            st_time_bw_keypresses = sd(time_since_last_press)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+ggplot(agg_data) + geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses, color = factor(TravelTime) ))+
+  geom_errorbar(aes(x=RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color=factor(TravelTime)),width=0)+
+  facet_wrap(~Subject, scales="free")+
+  theme_classic()
+
+agg_data_subj = agg_data %>% group_by(TravelTime, RequiredPresses, KeyPressIncreaseRate, patch_type, env_type) %>% 
+  filter(abs(mean_time_bw_keypresses - mean(mean_time_bw_keypresses)) < 2* sd(mean_time_bw_keypresses) ) %>%
+  summarise(mean_time_bw_keypresses_subj = mean(mean_time_bw_keypresses),
+            st_time_bw_keypresses_subj = sd(mean_time_bw_keypresses)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses_subj - st_time_bw_keypresses_subj,
+         time_bw_keypresses_max = mean_time_bw_keypresses_subj + st_time_bw_keypresses_subj)
+
+ggplot(agg_data_subj) + geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses_subj, color = env_type ))+
+  geom_errorbar(aes(x=RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color=env_type),width=0)+
+  # geom_point(aes(x = RequiredPresses, y = mean_time_bw_keypresses, factor(TravelTime)), size = 1)+
+  facet_wrap(~patch_type)+
+    ylab('Inter-Keypress Time')+
+  xlim(0, 30)+
+  # ylim(0,500)+
+  theme_classic()
+
+```
+looking at the difference in avg time between keypresses for just the 2nd harvest between the two environment for each tree type 
+
+```{r}
+
+agg_data_filt = agg_data %>% filter((KeyPressIncreaseRate == 2 & RequiredPresses==3) | (KeyPressIncreaseRate == 5 & RequiredPresses==6)) 
+agg_data_filt$TravelTime = as.factor(agg_data_filt$TravelTime)
+agg_data_filt$KeyPressIncreaseRate = as.factor(agg_data_filt$KeyPressIncreaseRate)
+pos <- position_dodge(width=0.9)
+
+ggplot(agg_data_filt, aes(x = KeyPressIncreaseRate, y = mean_time_bw_keypresses, ymin = time_bw_keypresses_min, 
+                               ymax = time_bw_keypresses_max, fill = TravelTime, group=TravelTime)) +
+  geom_bar(position = pos, stat="identity")+
+  geom_errorbar(position = pos, width=0)+
+  ggtitle("2nd harvest behavior")+
+  facet_wrap(~Subject)+
+  theme_classic()
+
+agg_data_subj_filt = agg_data_subj %>% filter((KeyPressIncreaseRate == 2 & RequiredPresses==3) | (KeyPressIncreaseRate == 5 & RequiredPresses==6)) 
+agg_data_subj_filt$TravelTime = as.factor(agg_data_subj_filt$TravelTime)
+agg_data_subj_filt$KeyPressIncreaseRate = as.factor(agg_data_subj_filt$KeyPressIncreaseRate)
+pos <- position_dodge(width=0.9)
+
+ggplot(agg_data_subj_filt, aes(x = patch_type, y = mean_time_bw_keypresses_subj, ymin = time_bw_keypresses_min, 
+                               ymax = time_bw_keypresses_max, fill = env_type, group=TravelTime)) +
+  geom_bar(position = pos, stat="identity")+
+  geom_errorbar(position = pos, width=0)+
+  ggtitle("2nd harvest behavior")+
+    ylab('Inter-Keypress Time')+
+  theme_classic()
+
+```
+possibly confounded with learning effect. so let's remove the first 2 trees 
+
+```{r}
+agg_data_filt_tree = data_all %>% group_by(Subject, TravelTime, RequiredPresses, KeyPressIncreaseRate, patch_type,env_type) %>% 
+  filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press),
+         TreeNumber > 2) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press),
+            st_time_bw_keypresses = sd(time_since_last_press)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+ggplot(agg_data_filt_tree) + geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses, color = factor(TravelTime) ))+
+  geom_errorbar(aes(x=RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color=factor(TravelTime)),width=0)+
+  facet_wrap(~Subject, scales="free")+
+  theme_classic()
+
+agg_data_filt_tree_subj = agg_data_filt_tree %>% group_by(TravelTime, RequiredPresses, KeyPressIncreaseRate, patch_type,env_type) %>% 
+  filter(abs(mean_time_bw_keypresses - mean(mean_time_bw_keypresses)) < 2* sd(mean_time_bw_keypresses) ) %>%
+  summarise(mean_time_bw_keypresses_subj = mean(mean_time_bw_keypresses),
+            st_time_bw_keypresses_subj = sd(mean_time_bw_keypresses)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses_subj - st_time_bw_keypresses_subj,
+         time_bw_keypresses_max = mean_time_bw_keypresses_subj + st_time_bw_keypresses_subj)
+
+ggplot(agg_data_filt_tree_subj) + geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses_subj, color = factor(TravelTime) ))+
+  geom_errorbar(aes(x=RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color=factor(TravelTime)),width=0)+
+  # geom_point(aes(x = RequiredPresses, y = mean_time_bw_keypresses, factor(TravelTime)), size = 1)+
+  facet_wrap(~KeyPressIncreaseRate, scales="free")+
+  xlim(0, 50)+
+  # ylim(0,500)+
+  theme_classic()
+
+```
+Bar graph comparing 2nd harvests after removing the first two trees from consideration
+
+```{r}
+agg_data_filt_tree_filt = agg_data_filt_tree %>% filter((KeyPressIncreaseRate == 2 & RequiredPresses==3) | (KeyPressIncreaseRate == 5 & RequiredPresses==6)) 
+agg_data_filt_tree_filt$TravelTime = as.factor(agg_data_filt_tree_filt$TravelTime)
+agg_data_filt_tree_filt$KeyPressIncreaseRate = as.factor(agg_data_filt_tree_filt$KeyPressIncreaseRate)
+pos <- position_dodge(width=0.9)
+
+ggplot(agg_data_filt_tree_filt, aes(x = KeyPressIncreaseRate, y = mean_time_bw_keypresses, ymin = time_bw_keypresses_min, 
+                               ymax = time_bw_keypresses_max, fill = TravelTime, group=TravelTime)) +
+  geom_bar(position = pos, stat="identity")+
+  geom_errorbar(position = pos, width=0)+
+  ggtitle("2nd harvest behavior")+
+  facet_wrap(~Subject)+
+  theme_classic()
+
+agg_data_filt_tree_subj_filt = agg_data_filt_tree_subj %>% filter((KeyPressIncreaseRate == 2 & RequiredPresses==3) | (KeyPressIncreaseRate == 5 & RequiredPresses==6)) 
+agg_data_filt_tree_subj_filt$TravelTime = as.factor(agg_data_subj_filt$TravelTime)
+agg_data_filt_tree_subj_filt$KeyPressIncreaseRate = as.factor(agg_data_filt_tree_subj_filt$KeyPressIncreaseRate)
+pos <- position_dodge(width=0.9)
+
+ggplot(agg_data_filt_tree_subj_filt, aes(x = patch_type, y = mean_time_bw_keypresses_subj, ymin = time_bw_keypresses_min, 
+                               ymax = time_bw_keypresses_max, fill = env_type, group=TravelTime)) +
+  geom_bar(position = pos, stat="identity")+
+  geom_errorbar(position = pos, width=0)+
+  ggtitle("2nd harvest behavior")+
+    ylab('Inter-Keypress Time')+
+  theme_classic()
+
+```
+
+
+Are they trying to maintain a fixed time to reward?
+
+* Time since last spacebar keypress as a function of press number, separated by harvest number and faceted by subject 
+
+```{r plot1, echo=FALSE}
+
+agg_data_by_time = data_all %>% group_by(Subject, RequiredPresses, TreeNumber, KeyPressIncreaseRate, patch_type) %>% 
+  filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press)) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press),
+            st_time_bw_keypresses = sd(time_since_last_press)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+
+ggplot(agg_data_by_time) + 
+  geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses, color = TreeNumber, group=TreeNumber) )  +
+  geom_errorbar(aes(x = RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color = TreeNumber ))+
+  facet_wrap(~Subject,scales="free_y")+
+  theme_classic()
+# 
+# ggplot(agg_data_by_time10) + 
+#   geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses, color = TreeNumber, group=TreeNumber) )  +
+#   geom_errorbar(aes(x = RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color = TreeNumber ))+
+#   facet_wrap(~Subject,scales="free_y")+
+#   theme_classic()
+
+```
+
+ not clear with multiple facets 
+ 
+ Subsetting the data for 4 subjects 
+ 
+```{r}
+
+agg_data_by_time_subset = agg_data_by_time[agg_data_by_time$Subject %in% subjects[5:8],]
+agg_data_by_time_subset5 = agg_data_by_time_subset[agg_data_by_time_subset$TravelTime==5,]
+
+agg_data_by_time_subset10 = agg_data_by_time_subset[agg_data_by_time_subset$TravelTime==10,]
+
+
+plot1 <- by(data= agg_data_by_time_subset5, INDICES = agg_data_by_time_subset5$Subject, FUN = function(m){
+  m = ggplot(m)+geom_line(aes(x= RequiredPresses, y = mean_time_bw_keypresses, color= TreeNumber, group=TreeNumber))
+  # +
+    # geom_errorbar(aes(x = RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color= TreeNumber), width= 0)
+})
+
+do.call(grid.arrange, plot1)
+
+
+plot1 <- by(data= agg_data_by_time_subset5, INDICES = agg_data_by_time_subset5$Subject, FUN = function(m){
+  m = ggplot(m)+geom_line(aes(x= RequiredPresses, y = mean_time_bw_keypresses, color= TreeNumber, group=TreeNumber))
+  # +
+    # geom_errorbar(aes(x = RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color= TreeNumber), width= 0)
+})
+
+do.call(grid.arrange, plot1)
+# ggplot(agg_data_by_time_subset10) + 
+#   geom_line(aes(x = RequiredPresses, y = mean_time_bw_keypresses, color = TreeNumber, group=TreeNumber) )  +
+#   geom_errorbar(aes(x = RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color = TreeNumber ))+
+#   facet_wrap(~Subject,scales="free_y")+
+#   theme_classic()
+```
+
+What does this look like aggregated across subjects? Perhaps we normalize by subject average first? 
+
+```{r}
+agg_data_by_time_subj = agg_data_by_time %>% group_by(TreeNumber, RequiredPresses, KeyPressIncreaseRate, patch_type) %>% 
+  filter(abs(mean_time_bw_keypresses - mean(mean_time_bw_keypresses)) < 2* sd(mean_time_bw_keypresses)) %>%
+  summarise(mean_time_bw_keypresses_subj = mean(mean_time_bw_keypresses),
+            st_time_bw_keypresses_subj = sd(mean_time_bw_keypresses)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses_subj - st_time_bw_keypresses_subj,
+         time_bw_keypresses_max = mean_time_bw_keypresses_subj + st_time_bw_keypresses_subj)
+
+
+ggplot(agg_data_by_time_subj) + geom_line(aes(x = RequiredPresses, y= mean_time_bw_keypresses_subj, color = TreeNumber, group=TreeNumber))+
+  # geom_errorbar(aes(x=RequiredPresses, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color= TreeNumber), width = 0)+
+  facet_wrap(~KeyPressIncreaseRate, scales="free")+
+  theme_classic()
+```
+
+Observing the effect of tree number only on the second harvest's average time between key presses 
+
+```{r}
+agg_subset_2nd_harvest = agg_data_by_time_subj %>% filter((KeyPressIncreaseRate==2 & RequiredPresses==3) | (KeyPressIncreaseRate==5 & RequiredPresses==6))
+
+ggplot(data= agg_subset_2nd_harvest) + geom_line(aes(x=TreeNumber, y = mean_time_bw_keypresses_subj, color = patch_type ))+
+  geom_errorbar(aes(x=TreeNumber, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color= patch_type), width = 0)+xlim(0,20)+ggtitle("2nd")+
+    ylab('Inter-Keypress Time')+theme_classic()
+
+agg_subset_2nd_harvest = agg_subset_2nd_harvest %>% mutate(harvest_num = "2nd")
+```
+There is a clear adaptation effect when it comes to effort rate invested by subjects
+
+Looking at the 2nd and 3rd harvest across different trees? 
+
+```{r}
+agg_subset_3rd_harvest = agg_data_by_time_subj %>% filter((KeyPressIncreaseRate==2 & RequiredPresses==5) | (KeyPressIncreaseRate==5 & RequiredPresses==16))
+
+ggplot(data= agg_subset_3rd_harvest) + geom_line(aes(x=TreeNumber, y = mean_time_bw_keypresses_subj, color = patch_type ))+
+  geom_errorbar(aes(x=TreeNumber, ymin = time_bw_keypresses_min, ymax = time_bw_ke. ypresses_max, color= patch_type), width = 0)+xlim(0,20)+ggtitle("3rd harvest")
+
+agg_subset_3rd_harvest = agg_subset_3rd_harvest %>% mutate(harvest_num = "3rd")
+
+```
+
+Putting 2nd and 3rd harvests together
+
+```{r}
+agg_subset_2nd_3rd = rbind(agg_subset_2nd_harvest, agg_subset_3rd_harvest)
+
+ggplot(data= agg_subset_2nd_3rd) + geom_line(aes(x=TreeNumber, y = mean_time_bw_keypresses_subj, color = patch_type, linetype = factor(harvest_num) ))+
+  geom_errorbar(aes(x=TreeNumber, ymin = time_bw_keypresses_min, ymax = time_bw_keypresses_max, color= patch_type), width = 0)+xlim(0,20)+
+    ylab('Inter-Keypress Time')+theme_classic()
+
+```
+
+
+
+# Correlate avg cadence with harest difficulty at exit 
+
+```{r cadence_corr_harvest, echo=FALSE}
+
+agg_data2 = data_all %>% group_by(Subject, TravelTime, TreeNumber) %>% 
+  # filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press) ) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press, na.rm=TRUE),
+            st_time_bw_keypresses = sd(time_since_last_press, na.rm=TRUE), 
+            max_harvest = length(unique(RequiredPresses)),
+            exit_difficulty = max(RequiredPresses),
+            avg_difficulty = mean(RequiredPresses)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+ggplot(data = agg_data2)+ geom_point(aes(x = max_harvest, y = mean_time_bw_keypresses, color= factor(TravelTime) ))+
+  facet_wrap(~Subject, scales = "free")
+
+```
+
+## looking at the aggregate by subject
+
+```{r}
+
+agg_subj = data_all %>% group_by(Subject, TravelTime) %>% 
+  # filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press) ) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press, na.rm=TRUE),
+            st_time_bw_keypresses = sd(time_since_last_press, na.rm=TRUE), 
+            max_harvest = max(harvest_id, na.rm=TRUE)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+ggplot(data = agg_subj)+ geom_point(aes(x = max_harvest, y = mean_time_bw_keypresses))+
+  geom_smooth(aes(x = max_harvest, y= mean_time_bw_keypresses), method="lm")+
+  facet_wrap(~TravelTime, scales="free")
+
+```
+The higher the effort rate, or vigor, the longer they harvest from the tree. 
+
+Separating by tree type as well 
+
+```{r}
+agg_subj = data_all %>% group_by(Subject, TravelTime, KeyPressIncreaseRate) %>% 
+  # filter(abs(time_since_last_press - mean(time_since_last_press)) < 2* sd(time_since_last_press) ) %>%
+  summarise(mean_time_bw_keypresses = mean(time_since_last_press, na.rm=TRUE),
+            st_time_bw_keypresses = sd(time_since_last_press, na.rm=TRUE), 
+            max_harvest = max(harvest_id, na.rm=TRUE)) %>%
+  mutate(time_bw_keypresses_min = mean_time_bw_keypresses - st_time_bw_keypresses,
+         time_bw_keypresses_max = mean_time_bw_keypresses + st_time_bw_keypresses)
+
+ggplot(data = agg_subj)+ geom_point(aes(x = max_harvest, y = mean_time_bw_keypresses, color= factor(KeyPressIncreaseRate) ))+
+  geom_smooth(aes(x = max_harvest, y= mean_time_bw_keypresses, color = factor(KeyPressIncreaseRate)), method="lm")+
+  facet_wrap(~TravelTime, scales= "free")+
+  theme(
+    legend.position = "bottom",
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6)
+    )+
+  scale_fill_manual(name="Patch Type",labels=c("Good", "Bad"))
+  
+
+```
+Statistical Test of effect of patch type, tree number, env type, etc 
+
+```{r}
+
+library(lme4)
+library(sjPlot)
+
+mdl_vigor = lmer(data= data_all, time_since_last_press ~ RequiredPresses * KeyPressIncreaseRate + TravelTime +TreeNumber + (1|Subject))
+summary(mdl_vigor)
+plot_model(mdl_vigor, type="diag")
+plot_model(mdl_vigor, type="int")
+plot_model(mdl_vigor, type="pred")
+
+```
+## harvest difficulty at exit correlating with average harvest difficulty 
+
+```{r}
+
+
+```
+

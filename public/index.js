@@ -20,7 +20,7 @@
 
 // Set to 'true' if you wish to only test the front-end (will not access databases)
 // **TODO** Make sure this is set to false before deploying!
-const noSave = true;
+const noSave = false;
 var elem;
 
 /* TEMPORARY USE OF ORIGINAL CODE TO TEST THINGS OUT */
@@ -177,9 +177,9 @@ function checkInfo() {
 	
     if (noSave) {
         // show('blinking', prevScreen);
-		// show('calibration', prevScreen);
-		// monitorCalibration(prevScreen);
-		beginBlock(block, shortFirst);
+		show('calibration', prevScreen);
+		monitorCalibration(prevScreen);
+		// beginBlock(block, shortFirst);
         return;
     }
     console.log(subject.id);
@@ -192,10 +192,10 @@ function checkInfo() {
 		// show('blinking', prevScreen);
 		createSubject(subjectcollection, subject);
 		
-		beginBlock(block, shortFirst);
+		// beginBlock(block, shortFirst);
 		
-		// show('calibration', prevScreen);
-		// monitorCalibration(prevScreen);
+		show('calibration', prevScreen);
+		monitorCalibration(prevScreen);
     }
 	
 	checkWinFocus();
