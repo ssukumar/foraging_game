@@ -21,23 +21,6 @@
   <!-- initialize the SDK after all desired features are loaded -->
   <script src="/__/firebase/init.js"></script>
 
-  <!-- update the version number and uncomment features as needed -->
-  <!-- <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js""></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script> -->
-  <!-- <script src="https://www.gstatic.com/firebase/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-functions-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-messaging-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js""></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-remote-config-compat.js"></script> -->
-  <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-  <!-- <script src="https://www.gstatic.com/firebase/init.js?useEmulator=true"></script> -->
-  <!-- ß -->
-
   <style media="screen">
   </style>
 </head>
@@ -267,13 +250,6 @@
        <h1>Instructions</h1>
        <!-- <hr> -->
        <div class="instructions well">
-         <!-- <p>
-  		When the timer elapses, you will see a message indicating a break before moving on to the next block. If you have completed both blocks of trials, then you will see a final message about the game ending.
-         </p>
-		 <p style = "color:red; font-size:120%">Do not defocus the game, resize the window or stay idle for too long. The game will be terminated if you do any of these more times than acceptable. This will affect your eligibility to be paid.</p>
-		 <p>After the game ends, please complete the final questionnaire. </p>
-		 <p>You will receive a completion code at the end of the game. </p>
-		 <p><strong>Note:</strong> this code helps us verify that you have finished the game which we will use to authorize payment. </p> -->
 			 
 		<p>You will get a break between Rounds 1 and 2. </p>
 		<p>You will receive a completion code at the end of Round 2 which will be used to authorize payment.  </p>
@@ -288,13 +264,56 @@
            <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions7', 'container-instructions8');">
                <span class="glyphicon glyphicon-arrow-left"></span> Back 
            </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-         <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions8');">
+         <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions9', 'container-instructions8');">
            <span class="glyphicon glyphicon-arrow-right"></span> Next
          </button>
          <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
            <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
        </center>
      </div>
+
+    <!-- Instruction Page 9-->
+    <div id="container-instructions9", style="display:none">
+    <h1>Instructions</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+
+      <p>One thing to note is that when multiple keypresses are required to fill the bar and receive apples, your pressing pace should be steady — neither too fast nor too slow.</p>  
+      <p>Before the main task begins, you'll practice maintaining this pace using a metronome.</p>  
+      <p>A cross will appear at the center of the screen, and you'll hear the sound of the metronome.</p>  
+      <p>Try to press the SPACE BAR in sync with the beat.</p> 
+      <br>
+
+      <img src="../images/cross.png">
+      <br>
+
+      <p>After the practice session, you'll see the same cross again.</p>  
+      <p>This time, you won't hear the metronome. Try to press the SPACE BAR as if you still hear the beat.</p>  
+      <p>We'll provide feedback on whether your pace is too slow or too fast.</p>  
+      
+      <br>
+
+      <img src="../images/feedback_fast.png" alt="Feedback: Too Fast">  
+  
+      <br>  
+      <img src="../images/feedback_slow.png" alt="Feedback: Too Slow">  
+      
+      <br>
+      <p><strong>Remember to maintain this same pace during the main task.</strong></p>  
+
+         </div>
+         <hr>
+         <center>
+             <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions7', 'container-instructions9');">
+                 <span class="glyphicon glyphicon-arrow-left"></span> Back 
+             </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions9');">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next
+           </button>
+           <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+         </center>
+       </div>
   
   <!-- Initial Form for basic information 
   **TODO** Update questions accordingly to what kinds of information you require-->
@@ -398,23 +417,6 @@
   <div id="container-exp" style="display:none">
   </div>
 
-  <div id="calibration", style = "display:none">
-        <div class="calibration_score"><strong>Score:</strong> <span id="scoreValue">0</span></div>
-  		<div class = "timer_calibration_div"><strong>Time Left:</strong> <span id="timer"></span></div>
-  </div>
-  
-  <div id = "calib_bw_block", style="display:none">
-      <!-- <hr> -->
-      <div class="instructions well">
-        <p>
- 		   You have pressed the space bar <span id="num_keypresses"></span> times in 40 seconds. If you can beat this score this time around, we will give you an additional $1 with the rest of your compensation. 
-        </p>
-        <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
-            Continue <span class="glyphicon glyphicon-arrow-right"></span>
-        </button>
-      </div>
-  </div>
-  
   <div id="blinking" , style="display:none">
     <div id="container"> 
       <svg id="basket_svg" viewBox="0 0 120 68" style="border: 1px solid black">
@@ -440,7 +442,14 @@
         <div id="progress-bar-container">
           <div id="progress-bar"></div>
         </div>
-		<div class = "timer_div"><strong>Time Left:</strong> <span id="timer"></span></div>
+
+     <div id="timeDisplay" style="display: none;">
+          <span id="timeText">Time Left: 00:00</span>
+      </div>
+      
+      <div id="feedback1_testing"></div>
+      <div id="feedback2_testing"></div>
+      
 		<div class = "key_instructions">
 			<p class="space_inst"><strong>Spacebar:</strong> Collect More Apples</p>
 			<p class="enter_inst"><strong>Enter:</strong> Move to Next Tree</p>
@@ -487,10 +496,7 @@
   <!-- Thank you page 
       **TODO** Update the completion code if necessary-->
   <div id="container-not-an-ad", style="display:none">
-      <!-- <div class="media-left pull-left" href="#">
-          REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
-          <!-- <img id="adlogo" src="images/university.png" alt="Lab Logo" /> -->
-       <!-- </div> -->
+
       <div class="media-body">
 
       <h2>Now just a few more question and you're done!</h2>
@@ -569,6 +575,6 @@
   <script src="static/lib/d3.v3.min.js"></script>
   <script src="static/lib/underscore-min.js"></script>
   <script src="static/lib/backbone-min.js"></script>
-  <script src="index2"></script>
+  <script src="index2.js"></script>
 </body>
 </html>
