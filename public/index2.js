@@ -1,4 +1,4 @@
-const noSave = false;
+const noSave = true;
 var elem;
 
 /* TEMPORARY USE OF ORIGINAL CODE TO TEST THINGS OUT */
@@ -133,6 +133,7 @@ function checkInfo() {
 	
     var actualCode = "apple"; // **TODO: Update depending on the "code" set in index.html
     var values = $("#infoform").serializeArray();
+
     subject.id = values[0].value;
     subject.age = values[1].value;
     subject.sex = values[2].value;
@@ -150,7 +151,9 @@ function checkInfo() {
 	}
 	
     if (noSave) {
-		beginBlock(block, shortFirst);
+		show('container-exp', prevScreen);
+        openFullScreen();
+		gamesetup();
         return;
     }
     console.log(subject.id);
@@ -203,6 +206,10 @@ function recordTrialSubj(collection, subjTrials) {
         });
 }
 
+
+// Getting the screen resolution
+screen_height = window.screen.height;
+screen_width = window.screen.width;
 
 // Important variables for coding
 var svgContainer;
@@ -260,13 +267,17 @@ var windowBlur;
 var monkeyposition_x;
 var monkeyposition_y;
 var newHeight;
+var treeHeight;
 var monkeyImages;
 var climbingMonkey;
 var monkeyIndex = 0;
 var climbingAnimationRunning = false;
 var climbinginterval;
 var interval;
-
+// Hard-coded based on eyeballing image on screen
+const topOfTree = (1/3) * screen_height;
+const bottomOfTree = (8/9) * screen_height;
+var treeHeight;
 
 var svgNS = "http://www.w3.org/2000/svg"; 
 const svgCanvas = document.getElementById("basket_svg");
@@ -342,12 +353,9 @@ function gamesetup() {
         .attr('fill', 'black')
         .attr('id', 'stage');
 
-    // Getting the screen resolution
-    screen_height = window.screen.height;
-    screen_width = window.screen.width;
-
-    fixation_cross = "fixation.png";
-    appletree = "appletree.png";
+	treeHeight = bottomOfTree - topOfTree;
+	fixation_cross = "fixation.png";
+    appletree = "coconuttree_only.png";
     basket = "basket.png";
     monkey1 = "monkey1.png";
     // monkey2 = "monkey2.png";
@@ -431,11 +439,13 @@ function gamesetup() {
         .attr('display', 'none');
 
     // havest monkey
+		// put the monkey where the apple/coconut text goes
     svgContainer.append('image')
-        .attr('x', screen_width * 2 / 7 + screen_width / 10 - 10)
-        .attr('y', screen_height / 10)
-        .attr('width', screen_height / 8)
-        .attr('height', screen_height / 8)
+        // .attr('x', screen_width * 2 / 7 + screen_width / 10 - 8)
+		.attr('x', 4 * screen_width / 6)
+        .attr('y', topOfTree)
+        .attr('width', screen_height / 5)
+        .attr('height', screen_height / 5)
         .attr('href', monkey4)
         .attr('id', 'monkey4')
         .attr('display', 'none');
@@ -489,11 +499,11 @@ function gamesetup() {
         .attr('text-anchor', 'middle')
         .attr('x', 4 * screen_width / 5)
         .attr('y', screen_height / 2)
-        .attr('font-size', '80')
+        .attr('font-size', '140')
         .attr('fill', 'red')
         .attr('id', 'harvestsign')
         .attr('display', 'none')
-        .text('🍎!');
+        .text('Yay!\n🥥!');
 
     // Time
     svgContainer.append('text')
@@ -663,9 +673,13 @@ function gamesetup() {
         .attr('font-family', 'Arial')
         .attr('display', 'none')
         .text('Press ENTER when you are ready.');
-
-    showMetronome()
-
+	
+	// Bypassing metronome
+		
+    // showMetronome()
+	
+	// begin first block
+	beginBlock();
 }
 
 function showMetronome() {
@@ -790,7 +804,7 @@ function resetTrial(travelTime) {
 	document.removeEventListener("keyup", handleKeyEvents);
 
     svgContainer.select("#appletree").attr("display", "none");
-    svgContainer.select("#basket").attr("display", "none");
+    // svgContainer.select("#basket").attr("display", "none");
     svgContainer.select("#nextsign").attr("display", "none");
 
     svgContainer.select("#monkey1").attr("display", 'none');
@@ -835,7 +849,7 @@ function beginBlock() {
 function runTrialLogic() {
 
     svgContainer.select("#appletree").attr("display", "block");
-    svgContainer.select("#basket").attr("display", "block");
+    // svgContainer.select("#basket").attr("display", "block");
     svgContainer.select("#nextsign").attr("display", "block");
 
     svgContainer.select("#monkey1").attr("display", 'block');
@@ -857,6 +871,7 @@ function runTrialLogic() {
     var d = new Date();
     var current_date = (parseInt(d.getMonth()) + 1).toString() + "/" + d.getDate() + "/" + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + "." + d.getSeconds() + "." + d.getMilliseconds();
 	gameStartTime = d.getTime();
+	currentTime = gameStartTime;
     // Uploading reach data for this reach onto the database
     subjTrials.id = subject.id.concat(block.toString());;
     subjTrials.currentDate = current_date;
@@ -923,7 +938,7 @@ function resetTree(){
         console.log("Travel Time: " + travelTime)
 
         svgContainer.select("#appletree").attr("display", "block");
-        svgContainer.select("#basket").attr("display", "block");
+        // svgContainer.select("#basket").attr("display", "block");
         svgContainer.select("#nextsign").attr("display", "block");
         svgContainer.select("#monkey1").attr("display", "block");
         svgContainer.select("#score").attr("display", "block");
@@ -1101,7 +1116,8 @@ function handleSpacebarPress(event) {
                 }
                 
                 
-                currentTime = audioContext.currentTime;
+                // currentTime = audioContext.currentTime;
+				currentTime = (new Date().getTime() - gameStartTime)/1000;
 
                 if (lastKeyPressTime !== null) {
                     interval = currentTime - lastKeyPressTime;
@@ -1148,7 +1164,7 @@ function handleSpacebarPress(event) {
                         document.removeEventListener("keydown", handleKeyDownEvents);
                         document.removeEventListener("keyup", handleKeyEvents);
 
-                        score += 10;
+                        score += 1;
 
                         setTimeout(function(){
                             // incrementRequiredPresses(); // Increase required presses for next harvest
@@ -1210,13 +1226,17 @@ function handleSpacebarPress(event) {
 
 // update the monkey position and movement
 function animate_monkeyClimbing() {
-
-    newHeight = (currentPresses / requiredPresses) * (7* screen_height / 9);
-
-    console.log('newheight: ' + newHeight);
+	
+	// shruthi change:
+	// changed thte *max* y position from 1/9 screen_height to 2/9 screen_ehight so it's lower by anothr 1/9th the screen height when the monkey is at the top of the tree
+    // newHeight = (currentPresses / requiredPresses) * (5* screen_height / 9);
+    // console.log('newheight: ' + newHeight);
+	
+	// removed hardcoding of dynamic height
+	newHeight = (currentPresses/requiredPresses) * treeHeight; 
 
     if (currentPresses <= requiredPresses){
-        newMonkeyY =  8 * screen_height / 9 - newHeight;
+        newMonkeyY = bottomOfTree - newHeight;
     }
 
     climbinginterval = Math.max(interval, acceptableLowerRange);
@@ -1254,17 +1274,18 @@ function climbStep() {
 }
 
 function resetMonkeyPosition(){
-    if (monkeyposition_y <= screen_height / 9 && gameState === HARVEST) {
+	// shruthi replaced hardcoded topoftree with variable set in gameSetup()
+    if (monkeyposition_y <= topOfTree && gameState === HARVEST) {
         
         svgContainer.selectAll(".monkey-frame").attr("display", "none");
 
         svgContainer.select('#monkey4').attr('display', 'block');
-        svgContainer.select('#harvestsign').attr('display', 'block');
+        // svgContainer.select('#harvestsign').attr('display', 'block');
             
         // Hide the text again after another 0.5 seconds (500 ms)
         setTimeout(function() {
             d3.select('#monkey4').attr('display', 'none');
-            svgContainer.select('#harvestsign').attr('display', 'none');
+            // svgContainer.select('#harvestsign').attr('display', 'none');
             svgContainer.select("#monkey1").attr("display", "block");
 
         }, 1000);

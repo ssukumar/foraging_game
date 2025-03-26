@@ -63,21 +63,19 @@
 
     <!-- Instruction Page 1-->
     <div id="container-instructions1", style="display:none; padding: 50px">
-    <h1>Online Experiment: Welcome to the Apple foraging Game!</h1>
+    <h1>Thank You for Participating!</h1>
     <!-- <hr> -->
     <div class="instructions well">
 
-      <h2>Thank You for Participating!</h2>
-      <p>
-        Your goal is to help the monkey collect as many apples as possible by pressing SPACE BAR.
+      <p style="text-align:center;">Help the monkey get his coconuts!</p> 
+      <!-- <p>
+        You will now play a game in which you control the actions of a monkey as shown below.
       </p>
 
-      <p>If you stay on the same tree, more keypresses will be needed over time. Keep a steady pace—neither too fast nor too slow.</p>  
-      <p>Before the main task, you'll practice with a metronome to match the beat.</p>  
-      <p>A cross will appear on the screen as you hear the beat—press SPACE BAR in sync.</p>  
-      <br>
+	  <p>Your goal is to help the monkey harvest as many coconuts as possible in 15 minutes.</p>
+      <br> -->
 
-      <img src="../images/cross.png">
+      <img src="../images/coconut/instructions1.png">
     </div>
     <hr>
       <center>
@@ -95,29 +93,17 @@
 
         <!-- Instruction Page 2-->
     <div id="container-instructions2", style="display:none; padding: 50px">
-      <h1>Online Experiment: Welcome to the Apple foraging Game!</h1>
-      <!-- <hr> -->
-      <div class="instructions well">
-
-
-      <p>After practice, you'll repeat the task without the metronome, simulating the rhythm.</p>  
-      <p>You'll receive feedback if your pace is too fast or slow.</p>  
-      
-      <br>
-
-      <img src="../images/feedback_fast.png" alt="Feedback: Too Fast" style="width:60%">  
-  
-      <br>  
-      <img src="../images/feedback_slow.png" alt="Feedback: Too Slow" style="width:60%">  
-      
-      <br>
-      <p><strong>Remember to maintain this same pace during the main task.</strong></p>  
-
-         </div>
+    <h1>Instruction Flow: Controlling the Monkey's Actions</h1>
+      <div class = "instructions well">
+      	<!-- <p>
+			<h2>Follow the flow of instructions below to learn how you can control what the monkey does. </h2>
+		</p> -->
+		<img src="../images/coconut/instructions2.png" style="width:110%">
+      </div>
          <hr>
          <center>
              <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions1', 'container-instructions2');">
-                 <span class="glyphicon glyphicon-arrow-left"></span> Back 
+                 <span class="glyphicon glyphicon-arrow-left"></span> Back
              </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions3', 'container-instructions2');">
              <span class="glyphicon glyphicon-arrow-right"></span> Next
@@ -125,28 +111,22 @@
            <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
              <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
          </center>
-       </div>
+    </div>
 
     <!-- Instruction Page 3-->
-         <div id="container-instructions3" style="display:none; padding: 50px">
-          <h1>Foraging apples!</h1>
+    <div id="container-instructions3" style="display:none; padding: 50px">
+    <h1>Game Dynamics</h1>
           <hr>
         <div class="instructions well">
-              <p>
-                  <h2>Below is a flow instruction guide and an example video for this game.</h2>
+              <p style="text-align:center;">
+				  Each time you make the monkey climb the tree, he will get tired and will need more keypresses to get to the top.
               </p>
+			  <!-- <p>The video below shows two successive climbs of a coconut tree.</p> -->
               <br>
               <div class="row">
-                  
                   <div>
                       <center>
-                          <img src="images/instruction.png" alt="Instruction Image" style="width:100%">
-                      </center>
-                  </div>
-                  <br>
-                  <div>
-                      <center>
-                      <video controls autoplay loop muted src="images/instruction.mov" alt="User demonstration with trackpad" style="width:60%"></video>
+                      <video controls autoplay loop muted src="images/coconut/instruction_vid.mov" alt="User demonstration with trackpad" style="width:60%"></video>
                       </center>
                   </div>
   
@@ -165,6 +145,7 @@
               </button>
           </center>
       </div>
+  
   
   <!-- Initial Form for basic information 
   **TODO** Update questions accordingly to what kinds of information you require-->
@@ -264,6 +245,36 @@
           </button>
       </center>
   </div>
+
+  <!-- Instruction Practice-->
+    <div id="container-instructions4" style="display:none; padding: 50px">
+    	<h1>First, practice the game</h1>
+	    <hr>
+      <div class="instructions well">
+
+            <div class="row">
+	            <p>
+				  <h2> You will now experience a 1-minute practice session before the main experiment. </h2>
+	                <!-- <h2>Below is a flow instruction guide and an example video for this game.</h2> -->
+	            </p>
+
+
+            </div>
+      </div>
+      <hr>
+      <center>
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+            </button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-right"></span> Next
+            </button>
+        </center>
+    </div>
+
 
   <div id="container-exp" style="display:none">
   </div>
