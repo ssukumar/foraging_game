@@ -174,7 +174,7 @@ function checkInfo() {
 		gamesetup();
     }
 	
-	checkWinFocus();
+	// checkWinFocus();
 }
 
 // Function used to create/update subject data in the database
@@ -210,18 +210,16 @@ function recordTrialSubj(collection, subjTrials) {
 
 
 // Getting the screen resolution
-screen_height = window.screen.height;
-screen_width = window.screen.width;
+var screen_height = window.innerHeight;
+var screen_width = window.innerWidth;
 
 // Important variables for coding
 var svgContainer;
-var screen_height;
-var screen_width;
 
 var time;
 var timeleft;
-var stoptimer;
-var main_time = .1 * 60 * 1000;
+var stoptimer = false;
+var main_time = 1 * 60 * 1000;
 
 var metro_block = 0;
 var metro_time = 10 * 1000;
@@ -257,10 +255,10 @@ var resetTrialTimeout; // Tiemout variable associated with starting a new trial
 var keyPressIncGoodBad = [2, 5];
 var maxDefocusLim = 5; // maximum number of times a window can be defocussed before a game is quit
 var defocusCount = 0;
-var inactiveLimSeconds = 45 * 1000;
+var inactiveLimSeconds = 20 * 1000;
 var inactiveTimeout;
 var enterSpaceDown;
-var warningLimSeconds = 45 * 1000;
+var warningLimSeconds = 15 * 1000;
 var warningTimeout;
 var bwBlocksLimSeconds = 300 * 1000;
 var bwBlocksTimeout;
@@ -277,8 +275,8 @@ var climbingAnimationRunning = false;
 var climbinginterval;
 var interval;
 // Hard-coded based on eyeballing image on screen
-const topOfTree = (1/3) * screen_height;
-const bottomOfTree = (8/9) * screen_height;
+var topOfTree = (1/3) * screen_height;
+var bottomOfTree = (8/9) * screen_height;
 var treeHeight;
 
 var svgNS = "http://www.w3.org/2000/svg"; 
@@ -316,14 +314,17 @@ function checkWinBlur(event){
 }
 
 function checkWinFocus(event){
-	windowBlur = false;
 	console.log("Window in focus")
+	svgContainer.select("#warningl1").attr("display", "none");
+	svgContainer.select("#warningl2").attr("display", "none");
 }
 
 
 function checkInactive(){
 	warningTimeout = setTimeout(function(){
-		document.getElementById('warning').style.display = 'block';
+		// document.getElementById('warning').style.display = 'block';
+		svgContainer.select("#warningl1").attr("display", "block");
+		svgContainer.select("#warningl2").attr("display", "block");
 	}, warningLimSeconds)
 	
 	inactiveTimeout = setTimeout(function(){
@@ -348,15 +349,19 @@ function gamesetup() {
     // Hide the mouse from view 
     $('html').css('cursor', 'none');
     $('body').css('cursor', 'none');
+	
+	// start timeout for keypress inactivity
+	checkInactive()
+	window.addEventListener("focus", checkWinFocus);
+	stoptimer = false
 
     // SVG container from D3.js to hold drawn items
     svgContainer = d3.select("body").append("svg")
-        .attr("width", "100%")
-        .attr("height", "100%")
+        .attr("width",  screen_width)
+        .attr("height",  screen_height)
         .attr('fill', 'black')
         .attr('id', 'stage');
-
-	treeHeight = bottomOfTree - topOfTree;
+	
 	fixation_cross = "fixation.png";
     appletree = "coconuttree_only.png";
     basket = "basket.png";
@@ -390,6 +395,10 @@ function gamesetup() {
         .attr('id', 'appletree')
         .attr('display', 'none');
     
+	topOfTree = (1/3) * svgContainer.select("#appletree").attr("height") //(1/3) * screen_height;
+	bottomOfTree = (8/9) * svgContainer.select("#appletree").attr("height") //((8/9) * screen_height;
+	treeHeight = bottomOfTree - topOfTree;
+	
     // basket
     svgContainer.append('image')
         .attr('x', screen_width / 2 + 50)
@@ -448,9 +457,9 @@ function gamesetup() {
     // havest monkey
 		// put the monkey where the apple/coconut text goes
     svgContainer.append('image')
-        // .attr('x', screen_width * 2 / 7 + screen_width / 10 - 8)
+         // .attr('x', screen_width * 2 / 7 + screen_width / 10 - 8)
 		.attr('x', 4 * screen_width / 6)
-        .attr('y', topOfTree)
+        .attr('y', screen_height / 10)
         .attr('width', screen_height / 5)
         .attr('height', screen_height / 5)
         .attr('href', monkey4)
@@ -680,6 +689,30 @@ function gamesetup() {
         .attr('font-family', 'Arial')
         .attr('display', 'none')
         .text('Press ENTER when you are ready.');
+		
+	// warning when inactive
+    svgContainer.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('x', screen_width / 2)
+        .attr('y', screen_height / 2 - 60)
+        .attr('font-size', '50')
+		.attr("font-weight", 700)
+        .attr('fill', 'red')
+        .attr('id', 'warningl1')
+        .attr('display', 'none')
+        .attr('font-family', 'Arial')
+        .text('PLEASE REFOCUS YOUR ATTENTION!!');
+		
+    svgContainer.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('x', screen_width / 2)
+        .attr('y', screen_height / 2 - 20)
+        .attr('font-size', '40')
+        .attr('fill', 'red')
+        .attr('id', 'warningl2')
+        .attr('display', 'none')
+        .attr('font-family', 'Arial')
+        .text('otherwise the game will exit soon...');
 	
 	// Bypassing metronome
 		
@@ -908,7 +941,9 @@ function runTrialLogic() {
             console.log("TIME'S UP!! ENDING THE GAME")
             document.removeEventListener("keydown", handleKeyDownEvents);
             document.removeEventListener("keyup", handleKeyEvents);
-            clearInterval(clockUpdateInterval);
+            // clearInterval(clockUpdateInterval);
+			// clockUpdateInterval.stop();
+			stoptimer = true;
             // endGame()
             if (block == 0){
                 endBlock();
@@ -920,7 +955,7 @@ function runTrialLogic() {
     });
     
     // window.addEventListener("blur", checkWinBlur);
-	window.addEventListener("focus", checkWinFocus);
+	// window.addEventListener("focus", checkWinFocus);
 	
 	document.addEventListener("keydown", handleKeyDownEvents);
 	document.addEventListener("keyup", handleKeyEvents);
@@ -1045,7 +1080,7 @@ function handleKeyEvents(event) {
 	if (event.key==="Enter" || event.key===" ") { 
 		clearTimeout(inactiveTimeout);
 		clearTimeout(warningTimeout);
-		document.getElementById('warning').style.display = 'none';
+		// document.getElementById('warning').style.display = 'none';
 		checkInactive();
 	}
 	
@@ -1243,10 +1278,10 @@ function animate_monkeyClimbing() {
     // console.log('newheight: ' + newHeight);
 	
 	// removed hardcoding of dynamic height
-	newHeight = (currentPresses/requiredPresses) * treeHeight; 
-
+	newHeight = (currentPresses/requiredPresses) * (6* screen_height / 9); 
+	console.log('newheight: ' + newHeight);
     if (currentPresses <= requiredPresses){
-        newMonkeyY = bottomOfTree - newHeight;
+        newMonkeyY = (8* screen_height / 9) - newHeight;
     }
 
     climbinginterval = Math.max(interval, acceptableLowerRange);
@@ -1316,6 +1351,8 @@ function removeRogueSVGElems(){
     svgContainer.select("#time").attr("display", "none");
 
     svgContainer.select("#travelsign").attr("display", "none");
+	svgContainer.select("#warningl1").attr("display", "none");
+	svgContainer.select("#warningl2").attr("display", "none");
 }
 
 // Helper function to end the game regardless good or bad
@@ -1350,7 +1387,10 @@ function helpEndBlock(){
 function badGame() {
     helpEnd();
 	gamestate = 'ABORT'
-	clearInterval(clockUpdateInterval);
+	// clearInterval(clockUpdateInterval);
+	// clockUpdateInterval.stop();
+	stoptimer=true;
+	show('container-failed', 'stage')
 }
 
 // End block normally 
@@ -1366,7 +1406,7 @@ function endBlock() {
 	}, bwBlocksLimSeconds)
 	svgContainer.select('#travelsign').attr('display', 'none');
 	document.getElementById("num_apples").innerText = score;
-	window.removeEventListener("blur", checkWinBlur);
+	// window.removeEventListener("blur", checkWinBlur);
 	window.removeEventListener("focus", checkWinFocus);
 
 	show('container-bw-blocks', 'stage') // needed to be added to move between blocks
@@ -1382,7 +1422,7 @@ function endGame() {
 	clearTimeout(warningTimeout);
 	clearTimeout(inactiveTimeout);
 	svgContainer.select('#travelsign').attr('display', 'none');
-	window.removeEventListener("blur", checkWinBlur);
+	// window.removeEventListener("blur", checkWinBlur);
 	window.removeEventListener("focus", checkWinFocus);
 	show('container-end-block', 'stage')
 	document.getElementById("num_apples2").innerText = score;
