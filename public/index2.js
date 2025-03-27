@@ -247,10 +247,10 @@ var resetTrialTimeout; // Tiemout variable associated with starting a new trial
 var keyPressIncGoodBad = [2, 5];
 var maxDefocusLim = 5; // maximum number of times a window can be defocussed before a game is quit
 var defocusCount = 0;
-var inactiveLimSeconds = 20 * 1000;
+var inactiveLimSeconds = 45 * 1000;
 var inactiveTimeout;
 var enterSpaceDown;
-var warningLimSeconds = 15 * 1000;
+var warningLimSeconds = 30 * 1000;
 var warningTimeout;
 var bwBlocksLimSeconds = 300 * 1000;
 var bwBlocksTimeout;
@@ -439,7 +439,7 @@ function gamesetup() {
     svgContainer.append('image')
          // .attr('x', screen_width * 2 / 7 + screen_width / 10 - 8)
 		.attr('x', 4 * screen_width / 6)
-        .attr('y', screen_height / 10)
+        .attr('y', screen_height / 3)
         .attr('width', screen_height / 5)
         .attr('height', screen_height / 5)
         .attr('href', monkey4)
