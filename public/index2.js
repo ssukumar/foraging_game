@@ -151,6 +151,8 @@ function checkInfo() {
 	}
 	
     if (noSave) {
+		
+		console.log(prevScreen)
 		show('container-exp', prevScreen);
         openFullScreen();
 		gamesetup();
@@ -219,7 +221,7 @@ var screen_width;
 var time;
 var timeleft;
 var stoptimer;
-var main_time = 15 * 60 * 1000;
+var main_time = .1 * 60 * 1000;
 
 var metro_block = 0;
 var metro_time = 10 * 1000;
@@ -314,6 +316,7 @@ function checkWinBlur(event){
 }
 
 function checkWinFocus(event){
+	windowBlur = false;
 	console.log("Window in focus")
 }
 
@@ -372,6 +375,10 @@ function gamesetup() {
     
     monkeyposition_x = screen_width * 2 / 7 + screen_width / 10 - 10;
     monkeyposition_y = screen_height - screen_height / 9;
+	
+	// set/reset required game parameters 
+	requiredPresses = 1
+	currentPresses = 0
 
     // Apple tree
     svgContainer.append('image')
@@ -677,6 +684,8 @@ function gamesetup() {
 	// Bypassing metronome
 		
     // showMetronome()
+		
+	console.log("ENDED FIRST BLOCK")
 	
 	// begin first block
 	beginBlock();
@@ -836,7 +845,8 @@ function chooseTravelTime() {
 }
 
 function beginBlock() {
-	// checkInactive();
+	
+	console.log("ENTERING NEW BLOCK ; block number: "+block)
 	clearTimeout(bwBlocksTimeout)
 	score = 0;
 	travelTime = chooseTravelTime()
@@ -1284,7 +1294,8 @@ function resetMonkeyPosition(){
             
         // Hide the text again after another 0.5 seconds (500 ms)
         setTimeout(function() {
-            d3.select('#monkey4').attr('display', 'none');
+			console.log("Should be clearing the harvest monkey")
+            svgContainer.select('#monkey4').attr('display', 'none');
             // svgContainer.select('#harvestsign').attr('display', 'none');
             svgContainer.select("#monkey1").attr("display", "block");
 
@@ -1292,18 +1303,48 @@ function resetMonkeyPosition(){
     }
 }
 
+// Helper function to remove rogue svg elements at the end of  a block or a game 
+function removeRogueSVGElems(){
+    svgContainer.select("#appletree").attr("display", "none");
+    svgContainer.select("#nextsign").attr("display", "none");
+
+    svgContainer.select("#monkey1").attr("display", 'none');
+    svgContainer.select("#monkey4").attr("display", 'none');
+    svgContainer.selectAll(".monkey-frame").attr("display", "none");
+
+    svgContainer.select("#score").attr("display", "none");
+    svgContainer.select("#time").attr("display", "none");
+
+    svgContainer.select("#travelsign").attr("display", "none");
+}
 
 // Helper function to end the game regardless good or bad
 function helpEnd() {
 
 	// push the data earlier than this at earlier checkpoints
+	closeFullScreen();
     recordTrialSubj(trialcollection, subjTrials);
+	removeRogueSVGElems();
+    // Show cursor between blocks
+    $('html').css('cursor', 'auto');
+    $('body').css('cursor', 'auto');
 }
+
+
 
 function helpEndBlock(){
 	// push the data earlier than this at earlier checkpoints
-	document.getElementById("timer").innerText = ''
+	// document.getElementById("timer").innerText = ''
     recordTrialSubj(trialcollection, subjTrials);
+	closeFullScreen();
+	gamestate = 'BETWEEN_BLOCKS'
+	 
+	removeRogueSVGElems();
+	
+    // Show cursor between blocks
+    $('html').css('cursor', 'auto');
+    $('body').css('cursor', 'auto');
+	
 }
 // Function that allows for the premature end of a game
 function badGame() {
@@ -1314,6 +1355,7 @@ function badGame() {
 
 // End block normally 
 function endBlock() {
+	console.log("INSIDE END BLOCK")
 	helpEndBlock();
 	block += 1;
 	clearTimeout(resetTrialTimeout);
@@ -1322,8 +1364,12 @@ function endBlock() {
 	bwBlocksTimeout = setTimeout(function(){
 		checkInfo();
 	}, bwBlocksLimSeconds)
-	document.getElementById('next').style.display = 'none';
+	svgContainer.select('#travelsign').attr('display', 'none');
 	document.getElementById("num_apples").innerText = score;
+	window.removeEventListener("blur", checkWinBlur);
+	window.removeEventListener("focus", checkWinFocus);
+
+	show('container-bw-blocks', 'stage') // needed to be added to move between blocks
 }
 
 // Function that ends the game appropriately after the experiment has been completed
@@ -1335,9 +1381,10 @@ function endGame() {
 	clearTimeout(resetTrialTimeout);
 	clearTimeout(warningTimeout);
 	clearTimeout(inactiveTimeout);
-	document.getElementById('next').style.display = 'none';
+	svgContainer.select('#travelsign').attr('display', 'none');
 	window.removeEventListener("blur", checkWinBlur);
 	window.removeEventListener("focus", checkWinFocus);
+	show('container-end-block', 'stage')
 	document.getElementById("num_apples2").innerText = score;
 	// setTimeout(show('container-not-an-ad', 'container-end-block'), 10000)
 }
