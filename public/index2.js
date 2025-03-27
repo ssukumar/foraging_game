@@ -144,17 +144,11 @@ function checkInfo() {
     subject.ethnicity = values[5].value;
     subject.race = values[6].value;
 	
-	if (block == 0){
-		prevScreen = 'container-info'
-	} else {
-		prevScreen = 'container-bw-blocks'
-	}
-	
+
     if (noSave) {
 		
-		console.log(prevScreen)
-		show('container-exp', prevScreen);
-        openFullScreen();
+		// show('container-exp', prevScreen);
+
 		gamesetup();
         return;
     }
@@ -166,11 +160,7 @@ function checkInfo() {
         return;
     } else {
 		createSubject(subjectcollection, subject);
-		
-		// beginBlock(block, shortFirst);
-		
-		show('container-exp', prevScreen);
-        openFullScreen();
+
 		gamesetup();
     }
 	
@@ -219,7 +209,8 @@ var svgContainer;
 var time;
 var timeleft;
 var stoptimer = false;
-var main_time = 1 * 60 * 1000;
+var practice_time = 1 *60 * 1000; // duration of practice 
+var main_time = 5 * 60 * 1000;
 
 var metro_block = 0;
 var metro_time = 10 * 1000;
@@ -238,10 +229,11 @@ let lastKeyPressTime = null;
 
 var long_travel = 10;
 var short_travel = 5;
+var practice_travel = 3; 
 var travelTime;
 var num_trials = 2000;
 var trialCount = 0; // tree or trial counter within a block 
-var block = 0; // block counter 
+var block = -1 ; // block counter ; -1 is practice and 0 and 1 are the two main blocks 
 var shortFirst = false; // if true,then the short travel time block is rendered first 
 var score = 0;  // flag to check if fallen apples are drawn 
 var clockUpdateInterval;
@@ -346,17 +338,8 @@ function gamesetup() {
     $('body').css('height', '100%');
     $('body').css('width', '100%');
 
-    // Hide the mouse from view 
-    $('html').css('cursor', 'none');
-    $('body').css('cursor', 'none');
-	
-	// start timeout for keypress inactivity
-	checkInactive()
-	window.addEventListener("focus", checkWinFocus);
-	stoptimer = false
-
     // SVG container from D3.js to hold drawn items
-    svgContainer = d3.select("body").append("svg")
+    svgContainer = d3.select("#container-exp").append("svg")
         .attr("width",  screen_width)
         .attr("height",  screen_height)
         .attr('fill', 'black')
@@ -381,9 +364,6 @@ function gamesetup() {
     monkeyposition_x = screen_width * 2 / 7 + screen_width / 10 - 10;
     monkeyposition_y = screen_height - screen_height / 9;
 	
-	// set/reset required game parameters 
-	requiredPresses = 1
-	currentPresses = 0
 
     // Apple tree
     svgContainer.append('image')
@@ -868,8 +848,9 @@ function resetTrial(travelTime) {
 // Function to choose travel time (currently randomly chosen to be short 50% of the time and long 50% of the time)
 function chooseTravelTime() {
     // return Math.random() < 0.5 ? long_travel : short_travel;
-	
-	if ((shortFirst && block == 0) || (!shortFirst && block == 1)) {
+	if (block == -1){
+		return practice_travel
+	}else if ((shortFirst && block == 0) || (!shortFirst && block == 1)) {
 		return short_travel
 	} else if ((!shortFirst && block == 0) || (shortFirst && block == 1)) {
 		return long_travel
@@ -880,9 +861,33 @@ function chooseTravelTime() {
 function beginBlock() {
 	
 	console.log("ENTERING NEW BLOCK ; block number: "+block)
+	// start timeout for keypress inactivity
+	checkInactive()
+    // Hide the mouse from view 
+    $('html').css('cursor', 'none');
+    $('body').css('cursor', 'none');
+	window.addEventListener("focus", checkWinFocus);
+	stoptimer = false
+	
+	// set/reset required game parameters 
+	requiredPresses = 1
+	currentPresses = 0
+	
 	clearTimeout(bwBlocksTimeout)
 	score = 0;
 	travelTime = chooseTravelTime()
+
+	
+	if (block == -1) {
+		prevScreen = 'container-info'
+	} else if (block == 0){
+		prevScreen = 'container-end-practice'
+	} else {
+		prevScreen = 'container-bw-blocks'
+	}
+	
+	show('container-exp', prevScreen);
+    openFullScreen();
 
 	runTrialLogic();
 	return false;
@@ -923,8 +928,13 @@ function runTrialLogic() {
         if (stoptimer) {
             return true;
         }
+		if (block == -1) {
+			time_dur = practice_time
+		} else {
+			time_dur = main_time
+		}
 
-        timeleft = Math.max(0,  main_time - elapsed);
+        timeleft = Math.max(0,  time_dur - elapsed);
         let minutes = Math.floor(timeleft / (1000 * 60)); 
         let seconds = Math.floor((timeleft % (1000 * 60)) / 1000);
 
@@ -945,7 +955,8 @@ function runTrialLogic() {
 			// clockUpdateInterval.stop();
 			stoptimer = true;
             // endGame()
-            if (block == 0){
+			
+            if (block <= 0){
                 endBlock();
             } else {
                 endGame();
@@ -1077,6 +1088,9 @@ function handleKeyDownEvents(event){
 // Function to handle key events
 function handleKeyEvents(event) {
 	
+	svgContainer.select("#warningl1").attr("display", "none");
+	svgContainer.select("#warningl2").attr("display", "none");
+	
 	if (event.key==="Enter" || event.key===" ") { 
 		clearTimeout(inactiveTimeout);
 		clearTimeout(warningTimeout);
@@ -1094,6 +1108,8 @@ function handleEnterKey(event) {
 	    if (event.key === "Enter" && enterKeyDown == true) {
 			gameState = LEAVE;
 			enterKeyDown= true;
+			clearTimeout(inactiveTimeout);
+			clearTimeout(warningTimeout);
 			currTimeStamp = new Date().getTime()
 		
 			subjTrials.timeStamp.push(currTimeStamp);
@@ -1340,6 +1356,7 @@ function resetMonkeyPosition(){
 
 // Helper function to remove rogue svg elements at the end of  a block or a game 
 function removeRogueSVGElems(){
+
     svgContainer.select("#appletree").attr("display", "none");
     svgContainer.select("#nextsign").attr("display", "none");
 
@@ -1353,6 +1370,9 @@ function removeRogueSVGElems(){
     svgContainer.select("#travelsign").attr("display", "none");
 	svgContainer.select("#warningl1").attr("display", "none");
 	svgContainer.select("#warningl2").attr("display", "none");
+	//
+   // d3.select("#stage").select("svgContainer").remove()
+	
 }
 
 // Helper function to end the game regardless good or bad
@@ -1390,14 +1410,15 @@ function badGame() {
 	// clearInterval(clockUpdateInterval);
 	// clockUpdateInterval.stop();
 	stoptimer=true;
-	show('container-failed', 'stage')
+	show('container-failed', 'container-exp')
 }
+
 
 // End block normally 
 function endBlock() {
 	console.log("INSIDE END BLOCK")
 	helpEndBlock();
-	block += 1;
+	
 	clearTimeout(resetTrialTimeout);
 	clearTimeout(warningTimeout);
 	clearTimeout(inactiveTimeout);
@@ -1408,8 +1429,13 @@ function endBlock() {
 	document.getElementById("num_apples").innerText = score;
 	// window.removeEventListener("blur", checkWinBlur);
 	window.removeEventListener("focus", checkWinFocus);
-
-	show('container-bw-blocks', 'stage') // needed to be added to move between blocks
+	
+	if (block == -1) {
+		show('container-end-practice', 'container-exp')
+	} else {
+		show('container-bw-blocks', 'container-exp') // needed to be added to move between blocks
+	}
+	block += 1;
 }
 
 // Function that ends the game appropriately after the experiment has been completed
