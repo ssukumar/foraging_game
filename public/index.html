@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
   <title>Foraging Experiment</title>
-
 
   <link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css" />
   <link rel="stylesheet" href="/static/style.css" type="text/css" />
@@ -21,25 +21,7 @@
   <!-- initialize the SDK after all desired features are loaded -->
   <script src="/__/firebase/init.js"></script>
 
-  <!-- update the version number and uncomment features as needed -->
-  <!-- <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js""></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script> -->
-  <!-- <script src="https://www.gstatic.com/firebase/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-functions-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-messaging-compat.js"></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js""></script>
-  <script src="https://www.gstatic.com/firebase/10.11.0/firebase-remote-config-compat.js"></script> -->
-  <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-  <!-- <script src="https://www.gstatic.com/firebase/init.js?useEmulator=true"></script> -->
-  <!-- ß -->
 
-  <style media="screen">
-  </style>
 </head>
 
 <body>
@@ -79,22 +61,27 @@
       </div>
   </div>
 
-
-  <!-- Instruction Page 1-->
-  <div id="container-instructions1", style="display:none">
-    <h1>Instructions</h1>
+    <!-- Instruction Page 1-->
+    <div id="container-instructions1", style="display:none; padding: 50px">
+    <h1>Thank You for Participating!</h1>
     <!-- <hr> -->
     <div class="instructions well">
-      <h2>Thank you for participating in our study!</h2>
-      <p>
-		  Your goal is to collect as many apples as you can from virtual apple trees.
-		<!-- Here, you will play a very simple game in which your goal will be to collect as many apples as you can from virtual apple trees. The game screen will look like this: -->
+
+      <p style="text-align:center;">Help the monkey get his coconuts!</p> 
+      <!-- <p>
+        You will now play a game in which you control the actions of a monkey as shown below.
       </p>
-	  <p>At the start of the game, the screen will look like this:</p>
-	  <img src="../images/instructions1.png">
+
+	  <p>Your goal is to help the monkey harvest as many coconuts as possible in 15 minutes.</p>
+      <br> -->
+
+      <img src="../images/coconut/instructions1.png">
     </div>
     <hr>
-    <center>
+      <center>
+        <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-consent', 'container-instructions1');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+        </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions1');">
         <span class="glyphicon glyphicon-arrow-right"></span> Next
       </button>
@@ -102,203 +89,67 @@
         <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
     </center>
   </div>
-  
-  <!-- Instruction Page 2-->
-  <div id="container-instructions2", style="display:none">
-    <h1>Instructions</h1>
-    <!-- <hr> -->
-    <div class="instructions well">
-      <p>
-		To collect apples from the tree, you hit the spacebar.  Each time you hit the spacebar, a green rectangle will grow within the bar on the right side of the screen.
-      </p>
-      <img src="../images/instructions2.png">
-    </div>
-    <hr>
-    <center>
-      <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions1', 'container-instructions2');">
-        <span class="glyphicon glyphicon-arrow-left"></span> Back 
-   	  </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions3', 'container-instructions2');">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next
-      </button>
-      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-    </center>
-  </div>
-  
-  <!-- Instruction Page 3-->
-  <div id="container-instructions3", style="display:none">
-    <h1>Instructions</h1>
-    <!-- <hr> -->
-    <div class="instructions well">
-      <p>
-		When the green rectangle reaches the top, you receive your apples.
-      </p>
-      <img src="../images/instructions3.png">
-    </div>
-    <hr>
-    <center>
-      <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions2', 'container-instructions3');">
-        <span class="glyphicon glyphicon-arrow-left"></span> Back 
-   	  </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions4', 'container-instructions3');">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next
-      </button>
-      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-    </center>
-  </div>
-  
-  
-  
- <!-- Instruction Page 4-->
-  <div id="container-instructions4", style="display:none">
-    <h1>Instructions</h1>
-    <!-- <hr> -->
-    <div class="instructions well">
- 
-	  <p> A blue number will then appear on the left side of the screen indicating the number of apples you received from the tree on that round.  You can also see the size of your harvest by the number of apples appearing on the ground below the tree.
-</p>
-	  <p> A running score will be updated on the top left indicating your total number of harvested apples.  You want to make this number as large as possible.</p>
-	  <!-- <p> This will also be visually indicated by apples appearing below the tree. </p> -->
-      <img src="../images/instructions4.png">
-    </div>
-    <hr>
-    <center>
-        <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions3', 'container-instructions4');">
-            <span class="glyphicon glyphicon-arrow-left"></span> Back 
-        </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions5', 'container-instructions4');">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next
-      </button>
-      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-    </center>
-  </div>
-  
-  
-  
-  <!-- Instruction Page 5-->
-   <div id="container-instructions5", style="display:none">
-     <h1>Instructions</h1>
-     <!-- <hr> -->
-     <div class="instructions well">
-       <p>
-		You always have two options. 
-		<!-- At any point while harvesting apples from a tree, you can press the enter key to move on to the next tree.  -->
-       </p>
-	   <p>One option is to continue harvesting apples from the current tree.  You do this by hitting the spacebar.</p>
-	   <p>The second option is to move to another tree.  You do this by hitting the Enter key.</p>
-	   <p>However, after hitting the Enter key, you will experience a delay before the next tree appears.</p>
-       <!-- <p>
-		Before the next tree appears, you will experience a time delay while you see the following message on the screen.
-       </p> -->
-       <img src="../images/instructions5.png">
-     </div>
-     <hr>
-     <center>
-         <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions4', 'container-instructions5');">
-             <span class="glyphicon glyphicon-arrow-left"></span> Back 
-         </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions6', 'container-instructions5');">
-         <span class="glyphicon glyphicon-arrow-right"></span> Next
-       </button>
-       <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-         <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-     </center>
-   </div>
-  
-  <!-- Instruction Page 6-->
-   <div id="container-instructions6", style="display:none">
-     <h1>Instructions</h1>
-     <!-- <hr> -->
-     <div class="instructions well">
-       <p>
-		   You will have two rounds of 15 minutes to collect as many apples as possible.  A countdown timer will indicate how much time you have left for the current round.
-		<!-- You will be required to perform this in two blocks of 15 minutes each. A countdown timer will indicate how much time you have left. -->
-       </p>
-       <img src="../images/instructions6.png">
-     </div>
-     <hr>
-     <center>
-         <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions5', 'container-instructions6');">
-             <span class="glyphicon glyphicon-arrow-left"></span> Back 
-         </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions7', 'container-instructions6');">
-         <span class="glyphicon glyphicon-arrow-right"></span> Next
-       </button>
-       <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-         <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-     </center>
-   </div>
-   
-   
-   <!-- Instruction Page 7-->
-    <div id="container-instructions7", style="display:none">
-      <h1>Instructions</h1>
-      <!-- <hr> -->
-      <div class="instructions well">
-        <!-- <p>
- 		If at any point, you need a reminder of which keys to press, please refer to the quick guide at the left bottom of the screen.
-        </p> -->
-		<p>Remember, you always have two options:</p>
-		<ul>
-			<li>Spacebar:   Continue harvesting from the current tree.</li>
-			<li>Enter key:   Move to a new tree. </li>
-		</ul>
-        <img src="../images/instructions7.png">
-      </div>
-      <hr>
-      <center>
-          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions6', 'container-instructions7');">
-              <span class="glyphicon glyphicon-arrow-left"></span> Back 
-          </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions8', 'container-instructions7');">
-          <span class="glyphicon glyphicon-arrow-right"></span> Next
-        </button>
-        <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-          <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-      </center>
-    </div>
-	
-	
-    <!-- Instruction Page 8-->
-     <div id="container-instructions8", style="display:none">
-       <h1>Instructions</h1>
-       <!-- <hr> -->
-       <div class="instructions well">
-         <!-- <p>
-  		When the timer elapses, you will see a message indicating a break before moving on to the next block. If you have completed both blocks of trials, then you will see a final message about the game ending.
-         </p>
-		 <p style = "color:red; font-size:120%">Do not defocus the game, resize the window or stay idle for too long. The game will be terminated if you do any of these more times than acceptable. This will affect your eligibility to be paid.</p>
-		 <p>After the game ends, please complete the final questionnaire. </p>
-		 <p>You will receive a completion code at the end of the game. </p>
-		 <p><strong>Note:</strong> this code helps us verify that you have finished the game which we will use to authorize payment. </p> -->
-			 
-		<p>You will get a break between Rounds 1 and 2. </p>
-		<p>You will receive a completion code at the end of Round 2 which will be used to authorize payment.  </p>
-		<p style = "color:red; font-soze:110%"><strong>The game will be terminated if you leave the game screen or fail to play the game (that is, have an extended pause between hitting the Spacebar or Enter key).</strong></p>  		
-		<p style = "color:red; font-soze:110%">You will not be paid if the game is terminated for these reasons. </p>
-		<p>Remember:  The goal is to collect as many apples as possible. </p>
 
-         <!-- <img src="../images/instructions6.png"> -->
-       </div>
-       <hr>
-       <center>
-           <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions7', 'container-instructions8');">
-               <span class="glyphicon glyphicon-arrow-left"></span> Back 
-           </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-         <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions8');">
-           <span class="glyphicon glyphicon-arrow-right"></span> Next
-         </button>
-         <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
-           <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
-       </center>
-     </div>
+
+        <!-- Instruction Page 2-->
+    <div id="container-instructions2", style="display:none; padding: 50px">
+    <h1>Instruction Flow: Controlling the Monkey's Actions</h1>
+      <div class = "instructions well">
+      	<!-- <p>
+			<h2>Follow the flow of instructions below to learn how you can control what the monkey does. </h2>
+		</p> -->
+		<img src="../images/coconut/instructions2.png" style="width:110%">
+      </div>
+         <hr>
+         <center>
+             <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions1', 'container-instructions2');">
+                 <span class="glyphicon glyphicon-arrow-left"></span> Back
+             </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions3', 'container-instructions2');">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next
+           </button>
+           <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+         </center>
+    </div>
+
+    <!-- Instruction Page 3-->
+    <div id="container-instructions3" style="display:none; padding: 50px">
+    <h1>Game Dynamics</h1>
+          <hr>
+        <div class="instructions well">
+              <p style="text-align:center;">
+				  Each time you make the monkey climb the tree, he will get tired and will need more keypresses to get to the top.
+              </p>
+			  <!-- <p>The video below shows two successive climbs of a coconut tree.</p> -->
+              <br>
+              <div class="row">
+                  <div>
+                      <center>
+                      <video controls autoplay loop muted src="images/coconut/instruction_vid.mov" alt="User demonstration with trackpad" style="width:60%"></video>
+                      </center>
+                  </div>
+  
+              </div>
+        </div>
+        <hr>
+        <center>
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions3');">
+              <span class="glyphicon glyphicon-arrow-left"></span> Back 
+              </button>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions3');">
+              <span class="glyphicon glyphicon-arrow-right"></span> Next
+              </button>
+          </center>
+      </div>
+  
   
   <!-- Initial Form for basic information 
   **TODO** Update questions accordingly to what kinds of information you require-->
-  <div id="container-info" style="display:none">
+  <div id="container-info" style="display:none; padding: 50px">
       <!-- CHANGE INDEX.JS CHECKINFO() IF MODIFIED -->
       <h1>Basic Information</h1>
       <hr>
@@ -386,7 +237,7 @@
       <center>
           <!-- <h1><b><em>Please enter fullscreen mode before you begin.</em></b></h1> //only for safari
           <hr> -->
-          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions8', 'container-info');">
+          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions3', 'container-info');">
               <span class="glyphicon glyphicon-arrow-left"></span> Back 
           </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
@@ -395,82 +246,74 @@
       </center>
   </div>
 
-  <div id="container-exp" style="display:none">
-  </div>
-
-  <div id="calibration", style = "display:none">
-        <div class="calibration_score"><strong>Score:</strong> <span id="scoreValue">0</span></div>
-  		<div class = "timer_calibration_div"><strong>Time Left:</strong> <span id="timer"></span></div>
-  </div>
-  
-  <div id = "calib_bw_block", style="display:none">
-      <!-- <hr> -->
+  <!-- Instruction Practice-->
+    <div id="container-instructions4" style="display:none; padding: 50px">
+    	<h1>First, practice the game</h1>
+	    <hr>
       <div class="instructions well">
-        <p>
- 		   You have pressed the space bar <span id="num_keypresses"></span> times in 40 seconds. If you can beat this score this time around, we will give you an additional $1 with the rest of your compensation. 
-        </p>
-        <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
-            Continue <span class="glyphicon glyphicon-arrow-right"></span>
-        </button>
-      </div>
-  </div>
-  
-  <div id="blinking" , style="display:none">
-    <div id="container"> 
-      <svg id="basket_svg" viewBox="0 0 120 68" style="border: 1px solid black">
-        <!-- Tree SVG -->
-	        <svg id="Tree" viewBox="50 -20 40 60">
-	          <!-- Tree elements go here -->
-	        </svg>
-	        <!-- Apples SVG -->
-	        <svg id="Apples" viewBox="50 -20 40 60">
-	          <!-- Apple elements go here -->
-	        </svg>
-	        <!-- Fallen Apples SVG -->
-	        <svg id="FallenApples" viewBox="0 0 120 68">
-	          <!-- Fallen apple elements go here -->
-	        </svg>
-		</svg>
 
-        <!-- Additional score display -->
-        
-		<div class="score"><strong>Score:</strong> <span id="scoreValue">0</span></div>
-        <div id="additionalScore"></div>
-        <div id="reset-instruction"></div>
-        <div id="progress-bar-container">
-          <div id="progress-bar"></div>
-        </div>
-		<div class = "timer_div"><strong>Time Left:</strong> <span id="timer"></span></div>
-		<div class = "key_instructions">
-			<p class="space_inst"><strong>Spacebar:</strong> Collect More Apples</p>
-			<p class="enter_inst"><strong>Enter:</strong> Move to Next Tree</p>
-		</div>
-		<div id = "warning", style = "display:none">
-			<p><strong>PLEASE REFOCUS YOUR ATTENTION BACK TO THE GAME!!</strong><p>
-				<p> The game will exit if you don't perform an appropriate action soon <p>
-		</div>
-    </div>
-  </div>
-  
-  <div id="next" , style="display:none">
-    <h1 style="font-size: 150%">Waiting for the next tree...</h1>
-  </div>
-  
-  <div id="container-bw-blocks", style="display:none">
-      <h1>Congrats! </h1>
+            <div class="row">
+	            <p>
+				  <h2> You will now experience a 1-minute practice session before the main experiment. </h2>
+	                <!-- <h2>Below is a flow instruction guide and an example video for this game.</h2> -->
+	            </p>
+
+
+            </div>
+      </div>
       <hr>
-	  <h2>You just completed the first block with <span id ="num_apples"></span> apples!!</h2>
-      <div class="instructions mid block">
-        <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
-		<p>If you don't press the button in 5 minutes, you will automatically be advanced to the next block.</p>
-		<p>Please continue to follow the same instructions on the next block; Remember: hit the "space bar" to collect apples and "enter" key to move to the next tree. </p>
+      <center>
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+            </button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-right"></span> Next
+            </button>
+        </center>
+    </div>
+
+
+	<div id="container-exp" style="display:none">
+	</div>
+
+	<div id = "warning", style = "display:none">
+		<p><strong>PLEASE REFOCUS YOUR ATTENTION BACK TO THE GAME!!</strong><p>
+			<p> The game will exit if you don't perform an appropriate action soon <p>
+	</div>
+  
+	<div id="container-end-practice", style="display:none">
+	  	<h1>Great! </h1>
+	  	<hr>
+	  	<h2>Now that you've practiced, you're ready to proceed to the main game</h2>
+
+		    <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
+			<p>If you don't press the button in 2 minutes, you will automatically be advanced to the next block.</p>
+			<p>Please continue to follow the same instructions on the next block; Remember: hit the SPACE BAR to collect coconuts and ENTER key to move to the next tree. </p>
+		    <center>
+		      <button type="button" class="btn btn-primary btn-lg" onClick="return beginBlock();">
+		        <span class="glyphicon glyphicon-arrow-right"></span> Next
+		      </button>
+		    </center>
+
+	</div>  
+	<div id="container-bw-blocks", style="display:none">
+	  <h1>Congrats! </h1>
+	  <hr>
+	  <h2>You just completed the first block with <span id ="num_apples"></span> coconuts!!</h2>
+	  <div class="instructions mid block">
+	    <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
+		<p>If you don't press the button in 2 minutes, you will automatically be advanced to the next block.</p>
+		<p>Please continue to follow the same instructions on the next block; Remember: hit the SPACE BAR to collect coconuts and ENTER key to move to the next tree. </p>
 	    <center>
-	      <button type="button" class="btn btn-primary btn-lg" onClick="return checkInfo();">
+	      <button type="button" class="btn btn-primary btn-lg" onClick="return beginBlock();">
 	        <span class="glyphicon glyphicon-arrow-right"></span> Next
 	      </button>
 	    </center>
 	</div>
-  </div>
+	</div>
 
 	<div id = "container-end-block", style="display:none">
         <h1>Congrats! </h1>
@@ -487,10 +330,7 @@
   <!-- Thank you page 
       **TODO** Update the completion code if necessary-->
   <div id="container-not-an-ad", style="display:none">
-      <!-- <div class="media-left pull-left" href="#">
-          REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
-          <!-- <img id="adlogo" src="images/university.png" alt="Lab Logo" /> -->
-       <!-- </div> -->
+
       <div class="media-body">
 
       <h2>Now just a few more question and you're done!</h2>
@@ -569,6 +409,6 @@
   <script src="static/lib/d3.v3.min.js"></script>
   <script src="static/lib/underscore-min.js"></script>
   <script src="static/lib/backbone-min.js"></script>
-  <script src="index2"></script>
+  <script src="index2.js"></script>
 </body>
 </html>

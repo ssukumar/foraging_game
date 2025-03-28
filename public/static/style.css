@@ -1,6 +1,4 @@
 body {
-    padding: 0px;
-    margin: 0px;
     background-color: white;
     color: black;
     font-weight: 300;
@@ -40,7 +38,7 @@ body {
   color: rgba(0, 0, 0, 0.87);
   font-family: Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 5px;
 }
 
 img{
@@ -234,6 +232,43 @@ img {
     margin: 20px auto;
 }
 
+#timeDisplay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-size: 40px;
+  color: red;
+  font-family: Arial;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+#feedback1_testing {
+  position: absolute;
+  font-size: 40px;
+  color: orange;
+  left: 400px;     
+  top: 500px;
+  font-family: Arial;
+  display: none;
+  /* Initially hidden */
+}
+
+
+#feedback2_testing {
+  position: absolute;
+  font-size: 40px;
+  color: orange;
+  left: 400px;     
+  top: 500px;
+  display: none;
+  /* Initially hidden */
+}
+
+
+
 /* these are all the same for now, but easy to modify individually */
 
 #container-ad,
@@ -244,6 +279,7 @@ img {
 #container-instructions3,
 #container-questionnaire,
 #container-info,
+#container-end-practice,
 #container-bw-blocks,
 #container-end-block {
     background: white;
