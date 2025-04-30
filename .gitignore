@@ -68,10 +68,16 @@ node_modules/
 foraging-game-6b695-firebase-adminsdk-5qlrf-1c634aa2b1.json
 
 # ignore ALL in sem_data/ directory
+.DS_STORE
 sem_data/
+venv/
+
 
 # ignore ALL .ipynb files
 *.ipynb
 
 # ignore ALL .Rmd files
 .Rmd
+
+# ignore ALL .pdf files
+.pdf
