@@ -1,4 +1,4 @@
-const noSave = true;
+const noSave = false;
 var elem;
 
 /* TEMPORARY USE OF ORIGINAL CODE TO TEST THINGS OUT */
@@ -200,8 +200,8 @@ function recordTrialSubj(collection, subjTrials) {
 
 
 // Getting the screen resolution
-var screen_height = window.innerHeight;
-var screen_width = window.innerWidth;
+var screen_height = window.screen.height;
+var screen_width = window.screen.width;
 
 // Important variables for coding
 var svgContainer;
@@ -209,8 +209,8 @@ var svgContainer;
 var time;
 var timeleft;
 var stoptimer = false;
-var practice_time = 1 *60 * 1000; // duration of practice 
-var main_time = 5 * 60 * 1000;
+var practice_time = 1 * 60 * 1000; // duration of practice 
+var main_time = 15 * 60 * 1000;
 
 var metro_block = 0;
 var metro_time = 10 * 1000;
@@ -227,8 +227,8 @@ let acceptableLowerRange = 300 / 1000; // lower range (300 mseconds)
 let acceptableUpperRange = 900 / 1000; // upper range (900 mseconds)
 let lastKeyPressTime = null;
 
-var long_travel = 10;
-var short_travel = 5;
+var long_travel = 30;
+var short_travel = 10;
 var practice_travel = 3; 
 var travelTime;
 var num_trials = 2000;
@@ -258,6 +258,7 @@ var windowBlur;
 
 var monkeyposition_x;
 var monkeyposition_y;
+var topbarrer = 3 / 7.5;
 var newHeight;
 var treeHeight;
 var monkeyImages;
@@ -266,8 +267,9 @@ var monkeyIndex = 0;
 var climbingAnimationRunning = false;
 var climbinginterval;
 var interval;
+
 // Hard-coded based on eyeballing image on screen
-var topOfTree = (1/3) * screen_height;
+var topOfTree = topbarrer * screen_height;
 var bottomOfTree = (8/9) * screen_height;
 var treeHeight;
 
@@ -361,7 +363,7 @@ function gamesetup() {
     monkey5 = "monkey5.png";
     nextsign = "next.png";
     
-    monkeyposition_x = screen_width * 2 / 7 + screen_width / 10 - 10;
+    monkeyposition_x = screen_width * 2.43 / 7;
     monkeyposition_y = screen_height - screen_height / 9;
 	
 
@@ -375,7 +377,7 @@ function gamesetup() {
         .attr('id', 'appletree')
         .attr('display', 'none');
     
-	topOfTree = (1/3) * svgContainer.select("#appletree").attr("height") //(1/3) * screen_height;
+	topOfTree = topbarrer * svgContainer.select("#appletree").attr("height") //(1/3) * screen_height;
 	bottomOfTree = (8/9) * svgContainer.select("#appletree").attr("height") //((8/9) * screen_height;
 	treeHeight = bottomOfTree - topOfTree;
 	
@@ -1294,10 +1296,10 @@ function animate_monkeyClimbing() {
     // console.log('newheight: ' + newHeight);
 	
 	// removed hardcoding of dynamic height
-	newHeight = (currentPresses/requiredPresses) * (6* screen_height / 9); 
+	newHeight = (currentPresses/requiredPresses) * ((1 - topbarrer) * screen_height); 
 	console.log('newheight: ' + newHeight);
     if (currentPresses <= requiredPresses){
-        newMonkeyY = (8* screen_height / 9) - newHeight;
+        newMonkeyY = (8 * screen_height / 9) - newHeight;
     }
 
     climbinginterval = Math.max(interval, acceptableLowerRange);
