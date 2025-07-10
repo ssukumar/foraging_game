@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>Foraging Experiment</title>
+
+  <link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css" />
+  <link rel="stylesheet" href="/static/style.css" type="text/css" />
+  
+  <!-- update the version number as needed -->
+  <script src="/__/firebase/6.6.1/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script src="/__/firebase/6.6.1/firebase-auth.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-database.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-firestore.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-messaging.js"></script>
+  <script src="/__/firebase/6.6.1/firebase-storage.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script src="/__/firebase/init.js"></script>
+
+
+</head>
+
+<body>
+	
+  <!-- Consent Page-->
+  <div id="container-consent">
+      <div id="consent">
+          <h1><b><u>Welcome</u></b></h1>
+          <h2>but first, we need your consent to proceed...</h2>
+          <hr />
+          <div class="legal well">
+              <p>
+                  We would like to invite you the take part in the following study named "Foraging for Reward: Pick as many coconuts as you can"
+              </p>
+              <p>
+                  This will take approximately 60 minutes, with the total game time being conducted in 2 blocks of 25 minutes each.<br> Please understand that we <em>reserve the right to not compensate entries</em> that fail to follow instructions during the experiment.
+                  <br>
+              </p>
+              <div id="consentForm">
+                  <iframe frameborder="1" id="consentForm" src="https://drive.google.com/file/d/1fCu-JrHFVy9OI1SPZcSczkHNNZQD4tbj/preview"></iframe>
+              </div>
+              <button type="button" class="btn btn-default btn-sm" onClick="window.print();">
+            <span class="glyphicon glyphicon-print"></span> Print a copy of this
+            </button>
+          </div>
+          <hr />
+          <h4>If you agree and consent to these terms, please click "I Agree" to continue. Otherwise, please exit the page and return this HIT.</h4>
+          <br />
+          <center>
+              <button type="button" class="btn btn-danger btn-lg" onClick="return show('final-page', 'container-consent');">
+            <span class="glyphicon glyphicon-ban-circle"></span> I do <u><b>NOT</b></u> consent to these terms.
+            </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions1', 'container-consent');">
+            <span class="glyphicon glyphicon-ok"></span> I Agree
+            </button>
+          </center>
+      </div>
+  </div>
+
+    <!-- Instruction Page 1-->
+    <div id="container-instructions1", style="display:none; padding: 50px">
+    <h1>Thank You for Participating!</h1>
+    <!-- <hr> -->
+    <div class="instructions well">
+
+      <p style="text-align:center;">Help the monkey get his coconuts!</p> 
+      <!-- <p>
+        You will now play a game in which you control the actions of a monkey as shown below.
+      </p>
+
+	  <p>Your goal is to help the monkey harvest as many coconuts as possible in 15 minutes.</p>
+      <br> -->
+
+      <img src="../images/coconut/instructions1.png">
+    </div>
+    <hr>
+      <center>
+        <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-consent', 'container-instructions1');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+        </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions1');">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next
+      </button>
+      <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+        <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+    </center>
+  </div>
+
+
+        <!-- Instruction Page 2-->
+    <div id="container-instructions2", style="display:none; padding: 50px">
+    <h1>Instruction Flow: Controlling the Monkey's Actions</h1>
+      <div class = "instructions well">
+      	<!-- <p>
+			<h2>Follow the flow of instructions below to learn how you can control what the monkey does. </h2>
+		</p> -->
+		<img src="../images/coconut/instructions2.png" style="width:110%">
+      </div>
+         <hr>
+         <center>
+             <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions1', 'container-instructions2');">
+                 <span class="glyphicon glyphicon-arrow-left"></span> Back
+             </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions3', 'container-instructions2');">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next
+           </button>
+           <!-- <button type="button" class="btn btn-primary btn-lg" id="runTrialButton">
+             <span class="glyphicon glyphicon-arrow-right"></span> Next</button> -->
+         </center>
+    </div>
+
+    <!-- Instruction Page 3-->
+    <div id="container-instructions3" style="display:none; padding: 50px">
+    <h1>Game Dynamics</h1>
+          <hr>
+        <div class="instructions well">
+              <p style="text-align:center;">
+				  Each time you make the monkey climb the tree, he will get tired and will need more keypresses to get to the top.
+              </p>
+			  <!-- <p>The video below shows two successive climbs of a coconut tree.</p> -->
+              <br>
+              <div class="row">
+                  <div>
+                      <center>
+                      <video controls autoplay loop muted src="images/coconut/instruction_vid.mov" alt="User demonstration with trackpad" style="width:60%"></video>
+                      </center>
+                  </div>
+  
+              </div>
+        </div>
+        <hr>
+        <center>
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions3');">
+              <span class="glyphicon glyphicon-arrow-left"></span> Back 
+              </button>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions3');">
+              <span class="glyphicon glyphicon-arrow-right"></span> Next
+              </button>
+          </center>
+      </div>
+  
+  
+  <!-- Initial Form for basic information 
+  **TODO** Update questions accordingly to what kinds of information you require-->
+  <div id="container-info" style="display:none; padding: 50px">
+      <!-- CHANGE INDEX.JS CHECKINFO() IF MODIFIED -->
+      <h1>Basic Information</h1>
+      <hr>
+
+      <form id='infoform'>
+          <div class="row-question">
+
+              <div class="questions" id="email">
+                  Prolific WorkerID:
+                  <input id="email-input" type="text" name="email" value="">
+              </div>
+
+              <div class="questions" id="age">
+                  Age:
+                  <input id="age" type="text" name="age" value="">
+              </div>
+
+              <div class="questions" id="sex">
+                  Gender:
+                  <select id="gender" name="gender">
+                    <option value=""></option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Genderqueer/Non-Binary</option>
+                </select>
+              </div>
+
+              <div class="questions" id="handedness">
+                  Right or left handed:
+                  <select id="hand" name="hand">
+                  <option value=""></option>
+                  <option value="righth">Right</option>
+                  <option value="lefth">Left</option>
+                  <option value="bothh">Ambidextrous</option>
+              </select>
+              </div>
+
+              <div class="questions" id="returner">
+                  Have you done our experiments before?
+                  <select id="repeat" name="repeater">
+                  <option value=""></option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="idk">I don't remember</option>
+              </select>
+              </div>
+
+              <!-- <div class="questions" id="startcode">
+                  What's the code from the last page (Reread the instructions page if you don't know):
+                  <input id="age" type="text" name="age" value="">
+              </div> -->
+
+              <hr>
+
+              <p>
+                  The following information is requested by the National Institute of Health. You are not <em>required</em>, but are encouraged to complete these.
+              </p>
+
+              <div class="questions" id="ethnicity">
+                  Ethnic Origin:
+                  <select id="ethnic" name="ethnic">
+                  <option value="">
+                  <option value="hispanic">Hispanic or Latino</option>
+                  <option value="non-hispanic">Not Hispanic or Latino</option>
+              </select>
+              </div>
+
+              <div class="questions" id="racial origin">
+                  Racial Origin:
+                  <select id="race" name="race">
+                  <option value="">
+                  <option value="indian/native">American Indian or Alaskan Native</option>
+                  <option value="asian">Asian</option>
+                  <option value="african-american">Black or African American</option>
+                  <option value="pacific-islander">Native Hawaiian or Other Pacific Islander</option>
+                  <option value="white">White or Caucasian</option>
+                  <option value="multiple">More than one race</option>
+                  <option value="unkown">Unknown</option>
+              </select>
+              </div>
+
+          </div>
+      </form>
+      <hr>
+      <center>
+          <!-- <h1><b><em>Please enter fullscreen mode before you begin.</em></b></h1> //only for safari
+          <hr> -->
+          <button type="button" id="back" value="back" class="btn btn-primary btn-lg previous" onClick="show('container-instructions3', 'container-info');">
+              <span class="glyphicon glyphicon-arrow-left"></span> Back 
+          </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button type="button" id="begin" value="next" class="btn btn-primary btn-lg continue" onClick="checkInfo();">
+              Begin Experiment <span class="glyphicon glyphicon-arrow-right"></span>
+          </button>
+      </center>
+  </div>
+
+  <!-- Instruction Practice-->
+    <div id="container-instructions4" style="display:none; padding: 50px">
+    	<h1>First, practice the game</h1>
+	    <hr>
+      <div class="instructions well">
+
+            <div class="row">
+	            <p>
+				  <h2> You will now experience a 1-minute practice session before the main experiment. </h2>
+	                <!-- <h2>Below is a flow instruction guide and an example video for this game.</h2> -->
+	            </p>
+
+
+            </div>
+      </div>
+      <hr>
+      <center>
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-instructions2', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-left"></span> Back 
+            </button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-info', 'container-instructions3');">
+            <span class="glyphicon glyphicon-arrow-right"></span> Next
+            </button>
+        </center>
+    </div>
+
+
+	<div id="container-exp" style="display:none">
+	</div>
+
+	<div id = "warning", style = "display:none">
+		<p><strong>PLEASE REFOCUS YOUR ATTENTION BACK TO THE GAME!!</strong><p>
+			<p> The game will exit if you don't perform an appropriate action soon <p>
+	</div>
+  
+	<div id="container-end-practice", style="display:none">
+	  	<h1>Great! </h1>
+	  	<hr>
+	  	<h2>Now that you've practiced, you're ready to proceed to the main game</h2>
+
+		    <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
+			<p>If you don't press the button in 2 minutes, you will automatically be advanced to the next block.</p>
+			<p>Please continue to follow the same instructions on the next block; Remember: hit the SPACE BAR to collect coconuts and ENTER key to move to the next tree. </p>
+		    <center>
+		      <button type="button" class="btn btn-primary btn-lg" onClick="return beginBlock();">
+		        <span class="glyphicon glyphicon-arrow-right"></span> Next
+		      </button>
+		    </center>
+
+	</div>  
+	<div id="container-bw-blocks", style="display:none">
+	  <h1>Congrats! </h1>
+	  <hr>
+	  <h2>You just completed the first block with <span id ="num_apples"></span> coconuts!!</h2>
+	  <div class="instructions mid block">
+	    <p>Whenever you're ready to proceed, please press the 'Next' button below. </p>
+		<p>If you don't press the button in 2 minutes, you will automatically be advanced to the next block.</p>
+		<p>Please continue to follow the same instructions on the next block; Remember: hit the SPACE BAR to collect coconuts and ENTER key to move to the next tree. </p>
+	    <center>
+	      <button type="button" class="btn btn-primary btn-lg" onClick="return beginBlock();">
+	        <span class="glyphicon glyphicon-arrow-right"></span> Next
+	      </button>
+	    </center>
+	</div>
+	</div>
+
+	<div id = "container-end-block", style="display:none">
+        <h1>Congrats! </h1>
+        <hr>
+	  	  <h2>You just completed the second and last block with <span id ="num_apples2"></span> apples!!</h2>
+	      <hr>
+	      <center>
+	        <button type="button" class="btn btn-primary btn-lg" onClick="return show('container-not-an-ad', 'container-end-block');">
+	          <span class="glyphicon glyphicon-arrow-right"></span> Next
+	        </button>
+	      </center>
+	</div>
+
+  <!-- Thank you page 
+      **TODO** Update the completion code if necessary-->
+  <div id="container-not-an-ad", style="display:none">
+
+      <div class="media-body">
+
+      <h2>Now just a few more question and you're done!</h2>
+      <form id="distractionForm">
+          <div class="question" id="distraction">
+              Please check any items that you have engaged in during the task. Please answer truthfully (there will be no penalty). <br>
+              <input type="checkbox" id="distract1" name="distract1" value="Phone">
+              <label for="distract1"> I used my cellphone</label><br>
+              <input type="checkbox" id="distract2" name="distract2" value="internet">
+              <label for="distract2"> I browsed the internet</label><br>
+              <input type="checkbox" id="distract3" name="distract3" value="person">
+              <label for="distract3"> I talked to another person</label><br>
+              <input type="checkbox" id="distract4" name="distract4" value="tv">
+              <label for="distract4"> I watched TV</label><br>
+              <input type="checkbox" id="distract5" name="distract5" value="music">
+              <label for="distract5"> I listened to music</label><br>
+              <input type="checkbox" id="distract6" name="distract6" value="restroom">
+              <label for="distract6"> I went to the restroom</label><br>
+              <input type="checkbox" id="distract7" name="distract7" value="other">
+              <label for="distract4"> Other</label><br>
+          </div>
+          <div class="question" id="feedback">
+              If you checked "Other," please indicate here:
+              <input id="distracto" type="text" name="distracto" value="">
+          </div>
+          </form>
+          <form id="feedbackForm">
+              <div class="question" id="feedback">
+                  Let us know if you had any issues with this experiment.
+                  <input id="feedback" type="text" name="feedback" value="">
+              </div>
+          </form>
+          <center>
+              <!-- <h1><b><em>Please enter fullscreen mode before you begin.</em></b></h1> //only for safari
+              <hr> -->
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <button type="button" id="end" value="final" onClick="saveFeedback();">
+                  Submit 
+              </button>
+          </center>
+      </div>
+  </div>
+
+  <!-- Ended early page -->
+  <div id="container-failed" style="display:none">
+      <div class="media-left pull-left" href="#">
+          <!-- **TODO** REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+          <img id="adlogo" src="images/university.png" alt="Lab Logo" />
+      </div>
+      <div class="media-body">
+          <h1>Attention Check Failed. DO NOT REFRESH!</h1>
+          <hr />
+          <p>If you are seeing this page it means you either defocussed from the game more times than admissible or were inactive for longer than 45 seconds.</p>
+            <body>This task requires your full attention, thus we kindly ask you to exit and return your submission.</body>  <br>
+            <body><b> Please DO NOT refresh the page to redo the experiment. <br>
+                If you do, you will not be compensated and we will not use your data.</b></body>  <br>
+            <body>We're sorry for this inconvenience.</body>
+      </div>
+  </div>
+
+  <!-- Final Page -->
+  <div id="final-page" style="display:none">
+      <div class="media-left pull-left" href="#">
+          <!-- **TODO** REPLACE THE LOGO HERE WITH YOUR  UNIVERSITY, LAB, or COMPANY -->
+          <img id="adlogo" src="images/university.png" alt="Lab Logo" />
+      </div>
+      <div class="media-body">
+          <h1>Your responses has been saved, thank you!</h1>
+          <hr />
+		  <h3>This study's completion code is: <FONT COLOR=red><u>CY3Y7N9N</u></FONT></h3>
+      </div>
+  </div>
+  
+  <script src="static/lib/jquery-min.js"></script>
+  <script src="static/lib/bootstrap.min.js"></script>
+  <script src="static/lib/d3.v3.min.js"></script>
+  <script src="static/lib/underscore-min.js"></script>
+  <script src="static/lib/backbone-min.js"></script>
+  <script src="index2.js"></script>
+</body>
+</html>
