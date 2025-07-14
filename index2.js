@@ -216,7 +216,7 @@ var time;
 var timeleft;
 var stoptimer = false;
 var practice_time = 1 * 60 * 1000; // duration of practice 
-var main_time = 25 * 60 * 1000;
+var main_time = 15 * 60 * 1000;
 
 var metro_block = 0;
 var metro_time = 10 * 1000;
@@ -233,8 +233,8 @@ let acceptableLowerRange = 300 / 1000; // lower range (300 mseconds)
 let acceptableUpperRange = 900 / 1000; // upper range (900 mseconds)
 let lastKeyPressTime = null;
 
-var long_travel = 30;
-var short_travel = 10;
+var long_travel = 20;
+var short_travel = 5;
 var practice_travel = 3; 
 var travelTime;
 var num_trials = 2000;
